@@ -7,8 +7,8 @@ import '../index.css'
 import logo from "../assets/logo.png"
 
 const Login = () => {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const [username, setUsername] = useState("omboy");
+    const [password, setPassword] = useState("12345");
 
     const navigate = useNavigate();
 
