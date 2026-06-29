@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Plus, Minus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase } from '../services/supabase';
@@ -9,25 +9,37 @@ export default function Pos() {
   const [cash, setCash] = useState("");
   const [cart, setCart] = useState([]);
 
-  const filteredProducts = sampleProducts.filter((product) =>
-    product.name.toLowerCase().includes(search.toLowerCase())
-  );
+const [products, setProducts] = useState(sampleProducts);
 
-  const addToCart = (product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+const filteredProducts = products.filter((product) =>
+  product.name.toLowerCase().includes(search.toLowerCase())
+);
 
-      if (existing) {
-        return prev.map((item) =>
-          item.id === product.id
-            ? { ...item, qty: item.qty + 1 }
-            : item
-        );
-      }
+const addToCart = (product) => {
+  const existing = cart.find((item) => item.id === product.id);
 
-      return [...prev, { ...product, qty: 1 }];
-    });
-  };
+  if (existing && existing.qty >= product.stock) {
+    toast.error("Not enough stock.");
+    return;
+  }
+
+  if (product.stock <= 0) {
+    toast.error("Out of stock.");
+    return;
+  }
+
+  setCart((prev) => {
+    if (existing) {
+      return prev.map((item) =>
+        item.id === product.id
+          ? { ...item, qty: item.qty + 1 }
+          : item
+      );
+    }
+
+    return [...prev, { ...product, qty: 1 }];
+  });
+};
 
   const increaseQty = (id) => {
     setCart((prev) =>
@@ -57,22 +69,38 @@ export default function Pos() {
 
   const change = Number(cash || 0) - total;
 
-  const checkout = () => {
-    if (cart.length === 0) {
-      toast.error("Cart is empty.");
-      return;
-    }
+const checkout = () => {
+  if (cart.length === 0) {
+    toast.error("Cart is empty.");
+    return;
+  }
 
-    if (Number(cash) < total) {
-      toast.error("Insufficient cash.");
-      return;
-    }
+  if (Number(cash) < total) {
+    toast.error("Insufficient cash.");
+    return;
+  }
 
-    toast.success("Sale Completed!");
+  // Decrease stock
+  setProducts((prevProducts) =>
+    prevProducts.map((product) => {
+      const cartItem = cart.find((item) => item.id === product.id);
 
-    setCart([]);
-    setCash("");
-  };
+      if (cartItem) {
+        return {
+          ...product,
+          stock: product.stock - cartItem.qty,
+        };
+      }
+
+      return product;
+    })
+  );
+
+  toast.success("Sale Completed!");
+
+  setCart([]);
+  setCash("");
+};
 
   return (
     <div className="min-h-screen p-6">
