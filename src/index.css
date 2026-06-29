@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+.page-title {
+    @apply text-2xl font-bold text-slate-900 tracking-tight;
+}
+.page-subtitle {
+    @apply text-slate-500 text-sm;
+}
