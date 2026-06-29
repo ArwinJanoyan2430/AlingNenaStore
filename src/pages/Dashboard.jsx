@@ -4,13 +4,13 @@ import { DollarSign, ShoppingCart, Package, AlertTriangle } from "lucide-react";
 const Dashboard = () => {
 
   return (
-    <div className="p-6 mt-10 md:mt-0">
+    <div className="p-6 mt-5 md:mt-0">
       {/* Header */}
-      <div className="max-w-6xl mx-auto mb-8">
+      <div className="max-w-6xl mx-auto mb-6 bg-white rounded-xl shadow p-5">
         <h1 className="text-3xl font-bold text-slate-900">
-          Store Dashboard
+          Omboy Store
         </h1>
-        <p className="text-slate-600 mt-1">
+        <p className="text-slate-600 mt-0">
           Sales and transactions overview
         </p>
       </div>
