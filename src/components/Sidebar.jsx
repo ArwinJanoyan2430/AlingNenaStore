@@ -104,6 +104,7 @@ const Sidebar = () => {
       {/* Mobile Sidebar */}
       <aside
         className={`fixed lg:hidden top-0 left-0 h-full w-64 bg-gray-950 z-50 flex flex-col shadow-2xl
+        transform transition-transform duration-300 ease-in-out
         ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex justify-end p-3">
