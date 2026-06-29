@@ -15,10 +15,10 @@ const Sidebar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutGrid },
-    { name: "POS", href: "/pos", icon: ShoppingCart },
-    { name: "Products", href: "/products", icon: Package },
-    { name: "Sales", href: "/sales", icon: FileText },
+    { name: "Dashboard", href: "/app/dashboard", icon: LayoutGrid },
+    { name: "POS", href: "/app/pos", icon: ShoppingCart },
+    { name: "Products", href: "/app/products", icon: Package },
+    { name: "Sales", href: "/app/sales", icon: FileText },
   ];
 
   const handleLogout = () => {

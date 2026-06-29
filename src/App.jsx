@@ -19,8 +19,8 @@ function App() {
         {/* Auth */}
         <Route path="/login" element={<Login />} />
 
-        {/* App Layout */}
-        <Route element ={<ProtectedRoute/>}>
+        {/* Protected App */}
+        <Route element={<ProtectedRoute />}>
           <Route path="/app" element={<Layout />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="pos" element={<Pos />} />
@@ -29,9 +29,10 @@ function App() {
           </Route>
         </Route>
 
+        {/* Root redirect */}
         <Route path="/" element={<Navigate to="/login" />} />
 
-        {/* Redirect */}
+        {/* Catch all */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </>
