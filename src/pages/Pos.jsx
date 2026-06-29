@@ -82,7 +82,7 @@ export default function Pos() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 p-6">
+    <div className="min-h-screen p-6">
 
       <div className="mb-6 bg-white rounded-xl shadow p-5">
         <h1 className="text-3xl font-bold">Cashier</h1>
