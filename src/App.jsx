@@ -27,7 +27,7 @@ function App() {
         </Route>
 
         {/* Redirect */}
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </>
   );
