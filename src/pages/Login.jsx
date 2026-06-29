@@ -41,8 +41,21 @@ const Login = () => {
                     <img src={logo} className="w-60 h-40 sm:w-60 sm:h-40 rounded-xl"  alt="logo" />
                 </div>
                 <div className="space-y-3">
-                    <input value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-orange-900 focus:ring-4 focus:ring-amber-700/30 transition-all duration-200 text-sm sm:text-base" type="text" placeholder="username" required/>
-                    <input value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-orange-900 focus:ring-4 focus:ring-amber-700/30 transition-all duration-200 text-sm sm:text-base" type="password" placeholder="password" required/>
+                    <input
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        type="text"
+                        placeholder="username"
+                        className="w-full px-4 py-3 text-[16px] rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-orange-900 focus:ring-4 focus:ring-amber-700/30"
+                        />
+
+                        <input
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        type="password"
+                        placeholder="password"
+                        className="w-full px-4 py-3 text-[16px] rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-orange-900 focus:ring-4 focus:ring-amber-700/30"
+                        />
                 </div>
                 <button className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-amber-700 to-orange-900 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition text-sm sm:text-base" onClick={handleLogin}>
                     Login
