@@ -38,10 +38,10 @@ const Login = () => {
         <div className="w-full max-w-[300px] sm:max-w-sm bg-white/80 backdrop-blur-lg shadow-2xl rounded-2xl p-6 sm:p-8 border border-gray-100">
             <div className="flex flex-col gap-4 ">
                 <div className="flex justify-center -mb-5">
-                    <img src={logo} className="w-100 h-40 sm:w-100 sm:h-50 rounded-xl"  alt="logo" />
+                    <img src={logo} className="w-60 h-40 sm:w-60 sm:h-40 rounded-xl"  alt="logo" />
                 </div>
                 <div className="space-y-3">
-                    <input value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-orange-900 focus:ring-4 focus:ring-amber-700/30 transition-all duration-200 text-sm sm:text-base" type="text " placeholder="username" required/>
+                    <input value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-orange-900 focus:ring-4 focus:ring-amber-700/30 transition-all duration-200 text-sm sm:text-base" type="text" placeholder="username" required/>
                     <input value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-orange-900 focus:ring-4 focus:ring-amber-700/30 transition-all duration-200 text-sm sm:text-base" type="password" placeholder="password" required/>
                 </div>
                 <button className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-amber-700 to-orange-900 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition text-sm sm:text-base" onClick={handleLogin}>
