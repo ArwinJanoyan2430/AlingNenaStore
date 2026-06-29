@@ -1,4 +1,5 @@
 const Card = ({ title, value, icon: Icon }) => {
+    
   return (
     <div>
         <div className="card card-hover p-5 sm:p-6 relative overflow-hidden group flex items-center justify-between bg-white rounded-xl shadow-sm border border-slate-100">
