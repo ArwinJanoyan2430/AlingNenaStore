@@ -27,7 +27,7 @@ const Login = () => {
 
         localStorage.setItem("user",JSON.stringify(data));
         toast.success("Login Successful!");
-        navigate("/dashboard");
+        navigate("/app/dashboard");
 
     }
 
