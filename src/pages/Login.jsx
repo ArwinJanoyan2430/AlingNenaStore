@@ -18,8 +18,7 @@ const Login = () => {
         .select("*")
         .eq("username", username)
         .eq("password", password)
-        .maybeSingle();
-
+        .maybeSingle()
         if (error || !data){
             toast.error("Invalid username or password");
             return;
