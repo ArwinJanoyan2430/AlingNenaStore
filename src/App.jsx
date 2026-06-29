@@ -8,6 +8,7 @@ import Pos from "./pages/Pos";
 import Products from "./pages/Products";
 import Sales from "./pages/Sales";
 import Layout from "./pages/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -19,11 +20,13 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* App Layout */}
-        <Route path="/app" element={<Layout />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="pos" element={<Pos />} />
-          <Route path="products" element={<Products />} />
-          <Route path="sales" element={<Sales />} />
+        <Route element ={<ProtectedRoute}>
+          <Route path="/app" element={<Layout />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="pos" element={<Pos />} />
+            <Route path="products" element={<Products />} />
+            <Route path="sales" element={<Sales />} />
+          </Route>
         </Route>
 
         <Route path="/" element={<Navigate to="/login" />} />
