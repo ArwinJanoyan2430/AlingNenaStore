@@ -2,8 +2,11 @@ import Sidebar from "../components/Sidebar";
 
 const Dashboard = () => {
   return (
-    <div>
-        <h1>Dashboard</h1>
+    <div className="mt-10">
+        <h1 className ="font-medium">Dashboard</h1>
+        <div>
+          <h1>123</h1>
+        </div>
     </div>
   );
 };

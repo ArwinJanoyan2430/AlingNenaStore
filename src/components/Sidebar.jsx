@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   X,
+  ShoppingBag, 
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -31,10 +32,13 @@ const Sidebar = () => {
       
       {/* Header */}
       <div className="p-6 border-b border-white/10 ">
-        <h1 className="text-lg font-bold tracking-wide">
-          Omboy Store
-        </h1>
-        <p className="text-xs text-gray-400 mt-1">POS System</p>
+      <div className="flex items-center gap-3">
+        <ShoppingBag />
+          <div>
+            <p className="font-bold text-[16px] text-white tracking-wide">Omboy Store</p>
+            <p className="text-[11px] text-slate-500 font-medium">POS System</p>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}
