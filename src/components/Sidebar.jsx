@@ -31,10 +31,10 @@ const Sidebar = () => {
       
       {/* Header */}
       <div className="p-6 border-b border-white/10 ">
-        <h1 className="text-lg font-bold tracking-wide sm:text-base">
+        <h1 className="text-lg font-bold tracking-wide">
           Omboy Store
         </h1>
-        <p className="text-xs text-gray-400 mt-1 sm:text-base">POS System</p>
+        <p className="text-xs text-gray-400 mt-1">POS System</p>
       </div>
 
       {/* Navigation */}
@@ -65,7 +65,7 @@ const Sidebar = () => {
       <div className="p-4 border-t border-white/10 shrink-0 bg-gray-950">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition text-sm sm:text-base"
+          className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition text-sm"
         >
           <LogOut size={18} />
           Logout
