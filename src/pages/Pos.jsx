@@ -1,15 +1,8 @@
 import { useMemo, useState } from "react";
 import { Search, Plus, Minus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
-
-const sampleProducts = [
-  { id: 1, name: "Coca-Cola", price: 25, stock: 20 },
-  { id: 2, name: "Sprite", price: 25, stock: 15 },
-  { id: 3, name: "Lucky Me Pancit", price: 18, stock: 30 },
-  { id: 4, name: "SkyFlakes", price: 10, stock: 50 },
-  { id: 5, name: "Coffee", price: 15, stock: 40 },
-  { id: 6, name: "Bread", price: 35, stock: 18 },
-];
+import { supabase } from '../services/supabase';
+import sampleProducts from "../sampleData/products";
 
 export default function Pos() {
   const [search, setSearch] = useState("");
