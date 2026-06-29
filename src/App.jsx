@@ -19,12 +19,14 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* App Layout */}
-        <Route path="/" element={<Layout />}>
+        <Route path="/app" element={<Layout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="pos" element={<Pos />} />
           <Route path="products" element={<Products />} />
           <Route path="sales" element={<Sales />} />
         </Route>
+
+        <Route path="/" element={<Navigate to="/login" />} />
 
         {/* Redirect */}
         <Route path="*" element={<Navigate to="/login" />} />
