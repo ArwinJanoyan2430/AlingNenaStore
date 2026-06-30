@@ -166,26 +166,32 @@ async function fetchRevenue() {
     });
   }
 
-  if (period === "month") {
-    const days = new Date(
-      today.getFullYear(),
-      today.getMonth() + 1,
-      0
-    ).getDate();
+if (period === "month") {
+  const today = new Date();
 
-    for (let i = 1; i <= days; i++) grouped[i] = 0;
+  const daysInMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    0
+  ).getDate();
 
-    data.forEach((sale) => {
-      const date = new Date(sale.created_at);
-
-      if (
-        date.getMonth() === today.getMonth() &&
-        date.getFullYear() === today.getFullYear()
-      ) {
-        grouped[date.getDate()] += Number(sale.total);
-      }
-    });
+  // Initialize every day to 0
+  for (let i = 1; i <= daysInMonth; i++) {
+    grouped[i] = 0;
   }
+
+  data.forEach((sale) => {
+    const date = new Date(sale.created_at);
+
+    // Only include sales from the current month
+    if (
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    ) {
+      grouped[date.getDate()] += Number(sale.total || 0);
+    }
+  });
+}
 
   if (period === "year") {
     const months = [
