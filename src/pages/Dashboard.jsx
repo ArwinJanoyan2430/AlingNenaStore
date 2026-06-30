@@ -361,7 +361,7 @@ useEffect(() => {
 
           {lowStock.length === 0 ? (
             <p className="text-gray-500 text-sm">
-              No low stock products 🎉
+              No low stock products!
             </p>
           ) : (
             <div className="flex-1 overflow-y-auto pr-2 space-y-3">
