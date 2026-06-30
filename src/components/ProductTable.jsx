@@ -11,7 +11,7 @@ export default function ProductTable({
           {/* HEADER */}
           <thead className="sticky top-0 bg-gray-100 z-10">
             <tr>
-              <th className="text-left p-4 px-10">Name</th>
+              <th className="text-left p-4">Name</th>
               <th className="text-left p-4">Category</th>
               <th className="text-left p-4">Cost Price</th>
               <th className="text-left p-4">Selling Price</th>
@@ -40,7 +40,7 @@ export default function ProductTable({
 
 
                   {/* Name */}
-                  <td className="p-4 px-10 font-medium">
+                  <td className="p-4 font-medium">
                     {product.name}
                   </td>
 
