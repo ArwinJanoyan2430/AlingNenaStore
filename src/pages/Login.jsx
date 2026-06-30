@@ -45,10 +45,12 @@ const Login = () => {
                         Welcome Back
                     </h1>
                     <p className="text-gray-500 text-center">
-                        Sign in to continue
+                        Login to continue
                     </p>
                 </div>
                 <div className="space-y-3">
+                    <div>
+                    <h6 className="text-gray-500 text-xs">Username</h6>
                     <input
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
@@ -56,8 +58,11 @@ const Login = () => {
                         placeholder="username"
                         className="w-full px-4 py-3 text-[16px] rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-orange-900 focus:ring-4 focus:ring-amber-700/30"
                         />
+                    </div>
+                    
 
                     <div className="relative">
+                        <h6 className="text-gray-500 text-xs">Password</h6>
                         <input
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -69,7 +74,7 @@ const Login = () => {
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute inset-y-0 right-3 flex items-center transition text-orange-900 hover:text-orange-900"
+                            className="absolute inset-y-10 right-3 flex items-center transition text-orange-900 hover:text-orange-900"
                         >
                             {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                         </button>

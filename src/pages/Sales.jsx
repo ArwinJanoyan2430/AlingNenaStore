@@ -42,9 +42,9 @@ export default function Sales() {
     <div className="p-6 space-y-6">
 
       {/* Header */}
-      <div className="bg-white rounded-xl shadow p-5">
-        <h1 className="text-3xl font-bold">Sales</h1>
-        <p className="text-gray-500">
+      <div className="mb-6 bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl shadow-lg p-6 text-white">
+        <h1 className="text-3xl font-bold">Sales Report</h1>
+        <p className="">
           Transaction history and revenue tracking
         </p>
       </div>

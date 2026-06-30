@@ -108,64 +108,71 @@ const filteredProducts = useMemo(() => {
   const change = Math.max(Number(cash || 0) - total, 0);
 
   // ---------------- CHECKOUT ----------------
-  const checkout = async () => {
+// ---------------- CHECKOUT ----------------
+const checkout = async () => {
+  if (cart.length === 0) {
+    toast.error("Cart is empty.");
+    return;
+  }
 
-    if (cart.length === 0) {
-      toast.error("Cart is empty.");
+  if (Number(cash) < total) {
+    toast.error("Insufficient cash.");
+    return;
+  }
+
+  const changeAmount = Number(cash) - total;
+
+  try {
+    // Save Sale
+    const { error: saleError } = await supabase
+      .from("sales")
+      .insert([
+        {
+          subtotal: total,
+          total: total,
+          payment: Number(cash),
+          change: changeAmount,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+
+    if (saleError) {
+      console.error(saleError);
+      toast.error(saleError.message);
       return;
     }
 
-    if (Number(cash) < total) {
-      toast.error("Insufficient cash.");
-      return;
-    }
+    // Update Product Stocks
+    for (const item of cart) {
+      const newStock = item.stock - item.qty;
 
-    const changeAmount = Number(cash) - total;
-
-    try {
-      // SAVE SALE
-const { data, error } = await supabase.from("sales").insert([
-  {
-    subtotal: total,
-    total: total,
-    payment: Number(cash),
-    change: changeAmount,
-    created_at: new Date().toISOString(),
-  },
-]);
-
-if (error) {
-  console.log("SUPABASE ERROR:", error);
-  toast.error(error.message);
-  return;
-}
-
-      // UPDATE STOCK (UI ONLY FOR NOW)
-      setProducts((prev) =>
-        prev.map((product) => {
-          const cartItem = cart.find((i) => i.id === product.id);
-
-          if (cartItem) {
-            return {
-              ...product,
-              stock: Math.max(product.stock - cartItem.qty, 0),
-            };
-          }
-
-          return product;
+      const { error: stockError } = await supabase
+        .from("products")
+        .update({
+          stock: newStock,
         })
-      );
+        .eq("id", item.id);
 
-      toast.success("Sale completed!");
-
-      setCart([]);
-      setCash("");
-
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to save sale");
+      if (stockError) {
+        console.error(stockError);
+        toast.error(`Failed to update stock for ${item.name}`);
+        return;
+      }
     }
-  };
+
+    // Reload products
+    await fetchProducts();
+
+    toast.success("Sale completed!");
+
+    setCart([]);
+    setCash("");
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to complete sale.");
+  }
+};
+
 
   // ---------------- LOADING UI ----------------
   if (loading) {
@@ -181,20 +188,25 @@ if (error) {
     <div className="min-h-screen p-6">
 
       {/* HEADER */}
-      <div className="mb-6 bg-white rounded-xl shadow p-5">
-        <h1 className="text-3xl font-bold">Cashier</h1>
-        <p className="text-slate-600">POS System</p>
+      <div className="mb-6 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl shadow-lg px-6 py-5 text-white">
+          <h1 className="text-3xl font-bold">
+              Cashier
+          </h1>
+
+          <p className="">
+              Point of Sale System
+          </p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
 
-<div className="lg:col-span-2 bg-white rounded-xl shadow p-5">
+<div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-200 p-5">
 
   {/* SEARCH */}
   <div className="relative mb-5">
     <Search className="absolute left-3 top-3 text-slate-400" size={18} />
     <input
-      className="w-full border rounded-lg pl-10 pr-4 py-2"
+      className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
       placeholder="Search products..."
       value={search}
       onChange={(e) => setSearch(e.target.value)}
@@ -210,17 +222,22 @@ if (error) {
         <button
           key={product.id}
           onClick={() => addToCart(product)}
-          className="border rounded-xl p-4 hover:shadow transition"
+          className="bg-white border border-gray-900 rounded-2xl p-4 text-left hover:border-orange-500 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
         >
-          <h2 className="font-semibold">{product.name}</h2>
+          <h2 className="font-semibold text-gray-800 line-clamp-2">{product.name}</h2>
 
-          <p className="text-amber-700 font-bold">
+          <p className="text-xl font-bold text-orange-600 mt-2">
             ₱{product.selling_price}
           </p>
 
-          <p className="text-xs text-slate-500">
-            Stock: {product.stock}
-          </p>
+          <div className="mt-0 flex justify-between items-center">
+            <span className="text-xs text-gray-500">
+              Stock:
+            </span>
+            <span className="px-2 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
+              {product.stock}
+            </span>
+          </div>
         </button>
       ))}
 
@@ -228,7 +245,7 @@ if (error) {
   </div>
 </div>
 {/* CART */}
-<div className="bg-white rounded-xl shadow p-5 flex flex-col h-[80vh]">
+<div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 flex flex-col h-[80vh]">
 
   <h2 className="text-xl font-bold mb-4">Cart</h2>
 
@@ -240,7 +257,7 @@ if (error) {
     )}
 
     {cart.map((item) => (
-      <div key={item.id} className="border rounded-lg p-3">
+      <div key={item.id} className="bg-gray-50 border border-gray-900 rounded-xl p-3 hover:bg-white transition">
         <div className="flex justify-between">
           <div>
             <h3 className="font-semibold">{item.name}</h3>
@@ -249,7 +266,7 @@ if (error) {
 
           <button
             onClick={() => removeItem(item.id)}
-            className="text-red-500"
+            className="h-8 w-8 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center transition"
           >
             <Trash2 size={18} />
           </button>
@@ -257,51 +274,69 @@ if (error) {
 
         <div className="flex justify-between mt-3">
           <div className="flex items-center gap-2">
-            <button onClick={() => decreaseQty(item.id)}>
+            <button
+              onClick={() => decreaseQty(item.id)}
+              className="w-5 h-5 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 flex items-center justify-center transition"
+              >
               <Minus />
             </button>
 
             <span>{item.qty}</span>
 
-            <button onClick={() => increaseQty(item.id)}>
+            <button
+            onClick={() => increaseQty(item.id)}
+            className="w-5 h-5 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 flex items-center justify-center transition"
+            >
               <Plus />
             </button>
           </div>
 
-          <span className="font-bold">
-            ₱{item.qty * item.selling_price}
-          </span>
+        <span className="font-semibold text-lg w-6 text-center">
+        {item.qty}
+        </span>
         </div>
       </div>
     ))}
   </div>
 
           {/* TOTAL */}
-          <div className="border-t mt-5 pt-5">
+          <div className="mt-5 border-t pt-5">
 
-            <div className="flex justify-between">
-              <span>Total</span>
-              <span className="font-bold">₱{total}</span>
-            </div>
+        <div className="flex justify-between items-center">
+
+        <span className="text-black">
+        Total
+        </span>
+
+        <span className="text-xl font-bold text-orange-600">
+        ₱{total.toLocaleString()}
+        </span>
+
+        </div>
 
             <input
               type="number"
               placeholder="Cash"
               value={cash}
               onChange={(e) => setCash(e.target.value)}
-              className="w-full border rounded-lg p-3 mt-3"
+              className="w-full rounded-xl border border-gray-900 bg-gray-50 px-3 py-2 mt-2 text-smfocus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
             />
 
-            <div className="flex justify-between mt-3">
-              <span>Change</span>
-              <span className="font-bold text-green-600">
-                ₱{change}
-              </span>
-            </div>
+        <div className="flex justify-between items-center mt-2">
+
+        <span className="text-gray-900">
+        Change
+        </span>
+
+        <span className="text-xl font-bold text-green-600">
+        ₱{change.toLocaleString()}
+        </span>
+
+        </div>
 
             <button
               onClick={checkout}
-              className="w-full mt-4 py-3 text-white bg-gradient-to-r from-amber-700 to-orange-900 rounded-lg"
+              className="w-full mt-2 bg-orange-600 hover:bg-orange-700 active:scale-95 transition-all rounded-xl py-2 text-sm font-semibold text-white shadow-lg"
             >
               Complete Sale
             </button>

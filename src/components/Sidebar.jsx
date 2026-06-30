@@ -17,9 +17,9 @@ const Sidebar = () => {
 
   const navItems = [
     { name: "Dashboard", href: "/app/dashboard", icon: LayoutGrid },
-    { name: "POS", href: "/app/pos", icon: ShoppingCart },
-    { name: "Products", href: "/app/products", icon: Package },
-    { name: "Sales", href: "/app/sales", icon: FileText },
+    { name: "Cashier", href: "/app/pos", icon: ShoppingCart },
+    { name: "Inventory", href: "/app/products", icon: Package },
+    { name: "Sales Report", href: "/app/sales", icon: FileText },
   ];
 
   const handleLogout = () => {
@@ -32,7 +32,16 @@ const Sidebar = () => {
       
       {/* Header */}
       <div className="p-6 border-b border-white/10 ">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3
+          rounded-2xl
+          bg-white/8
+          backdrop-blur-xl
+          border border-white/20
+          shadow-[0_8px_32px_rgba(0,0,0,0.12)]
+          px-4 py-3
+          transition-all duration-300
+          hover:bg-white/13
+          hover:shadow-[0_12px_40px_rgba(0,0,0,0.18)]">
         <ShoppingBag />
           <div>
             <p className="font-bold text-[16px] text-white tracking-wide">Omboy Store</p>

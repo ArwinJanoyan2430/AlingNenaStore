@@ -1,114 +1,108 @@
 export default function ProductTable({
-    products,
-    onEdit,
-    onDelete
+  products,
+  onEdit,
+  onDelete,
 }) {
-    return (
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
+  return (
+    <div className="bg-white rounded-xl shadow overflow-hidden">
+      <div className="max-h-[550px] overflow-y-auto">
+        <table className="w-full border-collapse">
 
-            <table className="w-full">
+          {/* HEADER */}
+          <thead className="sticky top-0 bg-gray-100 z-10">
+            <tr>
+              <th className="text-left p-4">ID</th>
+              <th className="text-left p-4">Name</th>
+              <th className="text-left p-4">Category</th>
+              <th className="text-left p-4">Cost Price</th>
+              <th className="text-left p-4">Selling Price</th>
+              <th className="text-center p-4">Stock</th>
+              <th className="text-center p-4">Actions</th>
+            </tr>
+          </thead>
 
-                {/* HEADER */}
-                <thead className="bg-gray-100">
-                    <tr>
-                        <th className="text-left p-4">ID</th>
-                        <th className="text-left p-4">Name</th>
-                        <th className="text-left p-4">Category</th>
-                        <th className="text-left p-4">Cost Price</th>
-                        <th className="text-left p-4">Selling Price</th>
-                        <th className="text-center p-4">Stock</th>
-                        <th className="text-center p-4">Actions</th>
-                    </tr>
-                </thead>
+          {/* BODY */}
+          <tbody>
+            {products.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={7}
+                  className="py-12 text-center text-gray-500"
+                >
+                  No products found.
+                </td>
+              </tr>
+            ) : (
+              products.map((product) => (
+                <tr
+                  key={product.id}
+                  className="border-t hover:bg-gray-50 transition"
+                >
+                  {/* ID */}
+                  <td className="p-4 text-xs text-gray-500">
+                    {product.id}
+                  </td>
 
-                {/* BODY */}
-                <tbody>
+                  {/* Name */}
+                  <td className="p-4 font-medium">
+                    {product.name}
+                  </td>
 
-                    {products.length === 0 ? (
-                        <tr>
-                            <td
-                                colSpan={7}
-                                className="text-center py-10 text-gray-500"
-                            >
-                                No products found.
-                            </td>
-                        </tr>
-                    ) : (
-                        products.map((product) => (
-                            <tr
-                                key={product.id}
-                                className="border-t hover:bg-gray-50 transition"
-                            >
+                  {/* Category */}
+                  <td className="p-4">
+                    {product.categories?.name ?? "-"}
+                  </td>
 
-                                {/* ID */}
-                                <td className="p-4 text-xs text-gray-500">
-                                    {product.id}
-                                </td>
+                  {/* Cost */}
+                  <td className="p-4">
+                    ₱{Number(product.cost_price).toFixed(2)}
+                  </td>
 
-                                {/* Name */}
-                                <td className="p-4 font-medium">
-                                    {product.name}
-                                </td>
+                  {/* Selling */}
+                  <td className="p-4 font-semibold text-green-600">
+                    ₱{Number(product.selling_price).toFixed(2)}
+                  </td>
 
-                                {/* Category */}
-                                <td className="p-4">
-                                    {product.categories?.name ?? "-"}
-                                </td>
+                  {/* Stock */}
+                  <td className="p-4 text-center">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        product.stock <= 5
+                          ? "bg-red-100 text-red-700"
+                          : product.stock <= 15
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {product.stock}
+                    </span>
+                  </td>
 
-                                {/* Cost Price */}
-                                <td className="p-4">
-                                    ₱{Number(product.cost_price).toFixed(2)}
-                                </td>
+                  {/* Actions */}
+                  <td className="p-4">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => onEdit(product)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition"
+                      >
+                        Edit
+                      </button>
 
-                                {/* Selling Price */}
-                                <td className="p-4 font-semibold text-green-600">
-                                    ₱{Number(product.selling_price).toFixed(2)}
-                                </td>
+                      <button
+                        onClick={() => onDelete(product.id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
 
-                                {/* Stock */}
-                                <td className="text-center p-4">
-                                    <span
-                                        className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                            product.stock <= 5
-                                                ? "bg-red-100 text-red-700"
-                                                : product.stock <= 15
-                                                ? "bg-yellow-100 text-yellow-700"
-                                                : "bg-green-100 text-green-700"
-                                        }`}
-                                    >
-                                        {product.stock}
-                                    </span>
-                                </td>
-
-                                {/* Actions */}
-                                <td className="p-4">
-                                    <div className="flex justify-center gap-2">
-
-                                        <button
-                                            onClick={() => onEdit(product)}
-                                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            onClick={() => onDelete(product.id)}
-                                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
-                                        >
-                                            Delete
-                                        </button>
-
-                                    </div>
-                                </td>
-
-                            </tr>
-                        ))
-                    )}
-
-                </tbody>
-
-            </table>
-
-        </div>
-    );
+        </table>
+      </div>
+    </div>
+  );
 }
