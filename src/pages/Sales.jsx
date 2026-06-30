@@ -37,7 +37,17 @@ export default function Sales() {
       <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
     </div>;
   }
+const today = new Date();
 
+const todaysTransactions = sales.filter((sale) => {
+  const saleDate = new Date(sale.created_at);
+
+  return (
+    saleDate.getDate() === today.getDate() &&
+    saleDate.getMonth() === today.getMonth() &&
+    saleDate.getFullYear() === today.getFullYear()
+  );
+}).length;
   return (
     <div className="p-6 space-y-6">
 
@@ -50,39 +60,99 @@ export default function Sales() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid md:grid-cols-3 gap-4">
+<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
 
-        <div className="bg-white p-5 rounded-xl shadow flex items-center gap-4">
-          <DollarSign className="text-green-600" />
-          <div>
-            <p className="text-gray-500 text-sm">Total Revenue</p>
-            <h2 className="text-xl font-bold">
-              ₱{totalRevenue.toLocaleString()}
-            </h2>
-          </div>
-        </div>
+  {/* Total Revenue */}
+  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition p-5">
+    <div className="flex justify-between items-start">
+      <div>
+        <p className="text-sm text-gray-500">Total Revenue</p>
 
-        <div className="bg-white p-5 rounded-xl shadow flex items-center gap-4">
-          <Receipt className="text-blue-600" />
-          <div>
-            <p className="text-gray-500 text-sm">Transactions</p>
-            <h2 className="text-xl font-bold">{sales.length}</h2>
-          </div>
-        </div>
+        <h2 className="mt-2 text-3xl font-bold text-green-600">
+          ₱{totalRevenue.toLocaleString()}
+        </h2>
 
-        <div className="bg-white p-5 rounded-xl shadow flex items-center gap-4">
-          <Calendar className="text-orange-600" />
-          <div>
-            <p className="text-gray-500 text-sm">Latest Sale</p>
-            <h2 className="text-sm font-bold">
-              {sales[0]?.created_at
-                ? new Date(sales[0].created_at).toLocaleString()
-                : "No sales yet"}
-            </h2>
-          </div>
-        </div>
-
+        <p className="mt-1 text-xs text-gray-400">
+          All-time earnings
+        </p>
       </div>
+
+      <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center">
+        <DollarSign className="text-green-600" size={24} />
+      </div>
+    </div>
+  </div>
+
+  {/* Transactions */}
+  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition p-5">
+    <div className="flex justify-between items-start">
+      <div>
+        <p className="text-sm text-gray-500">Transactions</p>
+
+        <h2 className="mt-2 text-3xl font-bold text-blue-600">
+          {sales.length}
+        </h2>
+
+        <p className="mt-1 text-xs text-gray-400">
+          Lifetime transactions
+        </p>
+      </div>
+
+      <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
+        <Receipt className="text-blue-600" size={24} />
+      </div>
+    </div>
+  </div>
+
+{/* Today's Transactions */}
+<div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition p-5">
+  <div className="flex justify-between items-start">
+
+    <div>
+      <p className="text-sm text-gray-500">
+        Today's Transactions
+      </p>
+
+      <h2 className="mt-2 text-3xl font-bold text-orange-600">
+        {todaysTransactions}
+      </h2>
+
+      <span className="inline-flex items-center mt-3 rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700">
+        Resets at 12:00 AM
+      </span>
+    </div>
+
+    <div className="h-12 w-12 rounded-xl bg-orange-100 flex items-center justify-center">
+      <Receipt className="text-orange-600" size={24} />
+    </div>
+
+  </div>
+</div>
+
+  {/* Latest Sale */}
+  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition p-5">
+    <div className="flex justify-between items-start">
+      <div>
+        <p className="text-sm text-gray-500">Latest Sale</p>
+
+        <h2 className="mt-2 text-sm font-semibold text-gray-800 leading-5">
+          {sales[0]?.created_at
+            ? new Date(sales[0].created_at).toLocaleString()
+            : "No sales yet"}
+        </h2>
+
+        <p className="mt-2 text-xs text-gray-400">
+          Most recent transaction
+        </p>
+      </div>
+
+      <div className="h-12 w-12 rounded-xl bg-orange-100 flex items-center justify-center">
+        <Calendar className="text-orange-600" size={24} />
+      </div>
+    </div>
+  </div>
+
+</div>
 
       {/* Sales Table */}
       <div className="bg-white rounded-xl shadow overflow-x-auto">
