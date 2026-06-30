@@ -81,16 +81,19 @@ export default function ProductModal({
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm overflow-y-auto p-4 flex items-center justify-center">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center">
+
+      <div className="w-full md:max-w-3xl h-[100dvh] md:h-auto md:max-h-[90vh] bg-white rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+
         {/* Header */}
-        <div className="bg-orange-600 text-white px-5 py-4 md:px-8 md:py-6 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-5 flex items-center justify-between">
+
           <div>
-            <h2 className="text-xl md:text-3xl font-bold">
+            <h2 className="text-2xl md:text-3xl font-bold">
               {product ? "Edit Product" : "Add Product"}
             </h2>
 
-            <p className="text-orange-100 text-sm md:text-base">
+            <p className="text-orange-100">
               Manage your store inventory
             </p>
           </div>
@@ -98,21 +101,24 @@ export default function ProductModal({
           <button
             type="button"
             onClick={onClose}
-            className="hover:bg-orange-700 rounded-lg p-2 transition"
+            className="p-2 rounded-lg hover:bg-orange-700 transition"
           >
             <X size={24} />
           </button>
+
         </div>
 
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="p-5 md:p-8 space-y-6"
+          className="flex-1 overflow-y-auto p-5 md:p-8 space-y-6"
         >
+
           {/* Product & Category */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <div>
-              <label className="mb-2 font-medium flex items-center gap-2">
+              <label className="mb-2 flex items-center gap-2 font-medium">
                 <Package size={18} />
                 Product Name
               </label>
@@ -121,14 +127,13 @@ export default function ProductModal({
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                placeholder=""
                 required
-                className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
 
             <div>
-              <label className="mb-2 font-medium flex items-center gap-2">
+              <label className="mb-2 flex items-center gap-2 font-medium">
                 <Tag size={18} />
                 Category
               </label>
@@ -138,26 +143,25 @@ export default function ProductModal({
                 value={form.category_id}
                 onChange={handleChange}
                 required
-                className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
                 <option value="">Select Category</option>
 
                 {categories.map((category) => (
-                  <option
-                    key={category.id}
-                    value={category.id}
-                  >
+                  <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
                 ))}
               </select>
             </div>
+
           </div>
 
           {/* Prices */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <div>
-              <label className="mb-2 font-medium flex items-center gap-2">
+              <label className="mb-2 flex items-center gap-2 font-medium">
                 <DollarSign size={18} />
                 Cost Price
               </label>
@@ -168,12 +172,12 @@ export default function ProductModal({
                 name="cost_price"
                 value={form.cost_price}
                 onChange={handleChange}
-                className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
 
             <div>
-              <label className="mb-2 font-medium flex items-center gap-2">
+              <label className="mb-2 flex items-center gap-2 font-medium">
                 <DollarSign size={18} />
                 Selling Price
               </label>
@@ -184,15 +188,17 @@ export default function ProductModal({
                 name="selling_price"
                 value={form.selling_price}
                 onChange={handleChange}
-                className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
+
           </div>
 
           {/* Stock */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
             <div>
-              <label className="block mb-2 font-medium flex items-center gap-2">
+              <label className="mb-2 flex items-center gap-2 font-medium">
                 <Boxes size={18} />
                 Stock
               </label>
@@ -202,12 +208,12 @@ export default function ProductModal({
                 name="stock"
                 value={form.stock}
                 onChange={handleChange}
-                className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
 
             <div>
-              <label className="block mb-2 font-medium flex items-center gap-2">
+              <label className="mb-2 font-medium">
                 Minimum Stock
               </label>
 
@@ -216,12 +222,12 @@ export default function ProductModal({
                 name="min_stock"
                 value={form.min_stock}
                 onChange={handleChange}
-                className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
 
             <div>
-              <label className="block mb-2 font-medium flex items-center gap-2">
+              <label className="mb-2 font-medium">
                 Status
               </label>
 
@@ -229,44 +235,52 @@ export default function ProductModal({
                 name="status"
                 value={form.status}
                 onChange={handleChange}
-                className="w-full rounded-xl border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
             </div>
+
           </div>
 
-          {/* Profit Card */}
+          {/* Profit */}
           <div className="rounded-xl border border-green-200 bg-green-50 p-5">
-            <p className="text-gray-500 text-sm">
+
+            <p className="text-sm text-gray-500">
               Estimated Profit per Item
             </p>
 
-            <h2 className="text-2xl md:text-3xl font-bold text-green-600">
+            <h2 className="mt-2 text-3xl font-bold text-green-600">
               ₱{profit}
             </h2>
+
           </div>
 
-          {/* Buttons */}
-          <div className="flex flex-col-reverse md:flex-row justify-end gap-3 pt-2">
+          {/* Footer */}
+          <div className="sticky bottom-0 bg-white border-t pt-5 flex flex-col sm:flex-row gap-3">
+
             <button
               type="button"
               onClick={onClose}
-              className="w-full md:w-auto px-6 py-3 rounded-xl border hover:bg-gray-100 transition"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 transition"
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl transition"
+              className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-xl transition"
             >
               {product ? "Update Product" : "Save Product"}
             </button>
+
           </div>
+
         </form>
+
       </div>
+
     </div>
   );
 }
