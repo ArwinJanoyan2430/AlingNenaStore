@@ -229,7 +229,7 @@ useEffect(() => {
       {/* HEADER */}
       <div className="mb-6 bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl shadow-lg p-6 text-white">
         <h1 className="text-3xl font-bold">
-          Omboy Store
+          Dashboard
         </h1>
 
         <p className="">

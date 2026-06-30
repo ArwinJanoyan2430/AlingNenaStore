@@ -31,27 +31,30 @@ const Sidebar = () => {
     <div className="flex flex-col h-full text-gray-100">
       
       {/* Header */}
-      <div className="p-6 border-b border-white/10 ">
-      <div className="flex items-center gap-3
-          rounded-2xl
-          bg-white/8
-          backdrop-blur-xl
-          border border-white/20
-          shadow-[0_8px_32px_rgba(0,0,0,0.12)]
-          px-4 py-3
-          transition-all duration-300
-          hover:bg-white/13
-          hover:shadow-[0_12px_40px_rgba(0,0,0,0.18)]">
-        <ShoppingBag />
-          <div>
-            <p className="font-bold text-[16px] text-white tracking-wide">Omboy Store</p>
-            <p className="text-[11px] text-slate-500 font-medium">POS System</p>
+      <div className="p-5 border-b border-gray-800">
+        <div className="rounded-2xl bg-gradient-to-r from-orange-600 to-amber-700 p-[1px]">
+          <div className="rounded-2xl bg-[#141824] px-4 py-4">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-xl bg-orange-500 flex items-center justify-center shadow-lg">
+                <ShoppingBag size={22} className="text-white" />
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold text-white">
+                  Omboy Store
+                </h2>
+
+                <p className="text-xs text-gray-400">
+                  Point of Sale System
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 p-3 space-y-1">
+      <div className="flex-1 p-3 space-y-1 ">
         {navItems.map((item) => {
           const active = pathname === item.href;
 
@@ -60,10 +63,10 @@ const Sidebar = () => {
               key={item.name}
               to={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200
                 ${
                   active
-                    ? "bg-gradient-to-r from-amber-700 to-orange-900 text-white shadow-md"
+                    ? "bg-gradient-to-r from-amber-700 to-orange-900 text-white shadow-lg"
                     : "text-gray-300 hover:bg-white/10 hover:text-white"
                 }`}
             >
