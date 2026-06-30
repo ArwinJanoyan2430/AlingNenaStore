@@ -107,29 +107,38 @@ export default function Sales() {
                 </td>
               </tr>
             ) : (
-              sales.map((sale) => (
-                <tr key={sale.id} className="border-t">
-                  <td className="p-4 text-xs text-gray-600">
-                    {sale.id}
-                  </td>
+              sales.map((sale, index) => (
+              <tr key={sale.id} className="border-t hover:bg-orange-50 transition">
+                <td className="p-4 font-medium">
+                  #{String(sales.length - index).padStart(4, "0")}
+                </td>
 
-                  <td className="p-4 font-bold text-green-600">
-                    ₱{Number(sale.total).toFixed(2)}
-                  </td>
+                <td className="p-4 font-bold text-green-600">
+                  ₱{Number(sale.total).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </td>
 
-                  <td className="p-4">
-                    ₱{Number(sale.cash).toFixed(2)}
-                  </td>
+                <td className="p-4">
+                  ₱{Number(sale.payment || 0).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </td>
 
-                  <td className="p-4">
-                    ₱{Number(sale.change).toFixed(2)}
-                  </td>
+                <td className="p-4">
+                  ₱{Number(sale.change || 0).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </td>
 
-                  <td className="p-4 text-sm text-gray-500">
-                    {new Date(sale.created_at).toLocaleString()}
-                  </td>
-                </tr>
-              ))
+                <td className="p-4 text-sm text-gray-500">
+                  {new Date(sale.created_at).toLocaleString()}
+                </td>
+              </tr>
+            ))
             )}
           </tbody>
 

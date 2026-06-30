@@ -11,8 +11,7 @@ export default function ProductTable({
           {/* HEADER */}
           <thead className="sticky top-0 bg-gray-100 z-10">
             <tr>
-              <th className="text-left p-4">ID</th>
-              <th className="text-left p-4">Name</th>
+              <th className="text-left p-4 px-10">Name</th>
               <th className="text-left p-4">Category</th>
               <th className="text-left p-4">Cost Price</th>
               <th className="text-left p-4">Selling Price</th>
@@ -38,13 +37,10 @@ export default function ProductTable({
                   key={product.id}
                   className="border-t hover:bg-gray-50 transition"
                 >
-                  {/* ID */}
-                  <td className="p-4 text-xs text-gray-500">
-                    {product.id}
-                  </td>
+
 
                   {/* Name */}
-                  <td className="p-4 font-medium">
+                  <td className="p-4 px-10 font-medium">
                     {product.name}
                   </td>
 
