@@ -1,55 +1,50 @@
 export default function ProductToolbar({
-    search,
-    setSearch,
-    category,
-    setCategory,
-    categories,
-    onAddProduct
+  search,
+  setSearch,
+  category,
+  setCategory,
+  categories,
+  onAddProduct,
 }) {
-    return (
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+  return (
+    <div className="bg-white rounded-2xl shadow border border-gray-200 p-4 mb-6">
 
-            {/* Search & Filter */}
-            <div className="flex flex-col md:flex-row gap-3 flex-1">
+      <div className="flex flex-col lg:flex-row gap-4">
 
-                <input
-                    type="text"
-                    placeholder="Search product..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-4 py-2 w-full outline-none focus:ring-2 focus:ring-blue-500"
-                />
+        {/* Search */}
+        <input
+          type="text"
+          placeholder="Search product..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+        />
 
-<select
-    value={category}
-    onChange={(e) => setCategory(e.target.value)}
-    className="border border-gray-300 rounded-lg px-4 py-2"
->
-    <option value="">All Categories</option>
-
-    {categories.map(cat => (
-
-        <option
-            key={cat.id}
-            value={cat.id}
+        {/* Category */}
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full lg:w-56 rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
         >
-            {cat.name}
-        </option>
+          <option value="">All Categories</option>
 
-    ))}
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
 
-</select>
+        {/* Add Product */}
+        <button
+          onClick={onAddProduct}
+          className="w-full lg:w-auto bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 text-white font-semibold px-6 py-3 rounded-xl shadow transition active:scale-95"
+        >
+          + Add Product
+        </button>
 
-            </div>
+      </div>
 
-            {/* Add Button */}
-            <button
-                onClick={onAddProduct}
-                className="bg-gradient-to-r from-amber-700 to-orange-900 hover:bg-amber-700 text-white font-medium px-5 py-2 rounded-lg transition"
-            >
-                + Add Product
-            </button>
-
-        </div>
-    );
+    </div>
+  );
 }
