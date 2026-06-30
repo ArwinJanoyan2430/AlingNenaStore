@@ -36,11 +36,11 @@ export default function Pos() {
   }
 
   // ---------------- FILTER ----------------
-  const filteredProducts = useMemo(() => {
-    return (products || []).filter((p) =>
-      (p.name || "").toLowerCase().includes(search.toLowerCase())
-    );
-  }, [products, search]);
+const filteredProducts = useMemo(() => {
+  return (products || []).filter((p) =>
+    (p.name || "").toLowerCase().includes(search.toLowerCase())
+  );
+}, [products, search]);
 
   // ---------------- ADD TO CART ----------------
   const addToCart = (product) => {
@@ -124,15 +124,21 @@ export default function Pos() {
 
     try {
       // SAVE SALE
-      const { error } = await supabase.from("sales").insert([
-        {
-          total,
-          cash: Number(cash),
-          change: changeAmount,
-        },
-      ]);
+const { data, error } = await supabase.from("sales").insert([
+  {
+    subtotal: total,
+    total: total,
+    payment: Number(cash),
+    change: changeAmount,
+    created_at: new Date().toISOString(),
+  },
+]);
 
-      if (error) throw error;
+if (error) {
+  console.log("SUPABASE ERROR:", error);
+  toast.error(error.message);
+  return;
+}
 
       // UPDATE STOCK (UI ONLY FOR NOW)
       setProducts((prev) =>
@@ -182,9 +188,9 @@ export default function Pos() {
 
       <div className="grid lg:grid-cols-3 gap-6">
 
-{/* PRODUCTS */}
 <div className="lg:col-span-2 bg-white rounded-xl shadow p-5">
 
+  {/* SEARCH */}
   <div className="relative mb-5">
     <Search className="absolute left-3 top-3 text-slate-400" size={18} />
     <input
@@ -195,10 +201,9 @@ export default function Pos() {
     />
   </div>
 
-  {/* SCROLLABLE AREA */}
-  <div className="h-[70vh] overflow-y-auto pr-2">
-    
-    {/* GRID */}
+  {/* FIXED GRID HEIGHT */}
+  <div className="h-[420px] overflow-y-auto pr-2">
+
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 
       {filteredProducts.map((product) => (
@@ -220,7 +225,6 @@ export default function Pos() {
       ))}
 
     </div>
-
   </div>
 </div>
 {/* CART */}
