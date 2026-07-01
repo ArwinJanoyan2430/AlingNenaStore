@@ -415,11 +415,11 @@ useEffect(() => {
 
     <div>
       <h2 className="font-semibold text-lg">
-        Total Sales Overview
+        Revenue Overview
       </h2>
 
       <p className="text-xs text-gray-500">
-        Sales by {revenuePeriod}
+        Revenue by {revenuePeriod}
       </p>
     </div>
 

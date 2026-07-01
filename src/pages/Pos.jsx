@@ -413,7 +413,7 @@ Shopping Cart
       <div className="bg-gradient-to-r from-orange-500 to-amber-600 text-white p-5 rounded-t-3xl sm:rounded-t-2xl">
 
         <h2 className="text-2xl font-bold">
-          Sale Completed 🎉
+          Sale Completed!
         </h2>
 
         <p className="text-orange-100 text-sm">
@@ -425,28 +425,32 @@ Shopping Cart
       {/* Items */}
       <div className="flex-1 overflow-y-auto p-5 space-y-3">
 
+      <div className="p-0 space-y-2">
+
         {lastSale.items.map((item) => (
           <div
             key={item.id}
-            className="flex justify-between items-center border rounded-xl p-3"
+            className="flex items-start justify-between text-sm"
           >
-            <div className="min-w-0">
-
-              <h3 className="font-semibold truncate">
+            {/* Left side */}
+            <div className="flex flex-col min-w-0">
+              <span className="font-medium truncate">
                 {item.name}
-              </h3>
+              </span>
 
-              <p className="text-sm text-gray-500">
+              <span className="text-[11px] text-gray-500">
                 {item.qty} × ₱{Number(item.selling_price).toLocaleString()}
-              </p>
-
+              </span>
             </div>
 
-            <span className="font-bold text-orange-600">
+            {/* Right side */}
+            <span className="font-semibold whitespace-nowrap">
               ₱{(item.qty * item.selling_price).toLocaleString()}
             </span>
           </div>
         ))}
+
+      </div>
 
       </div>
 
@@ -471,6 +475,20 @@ Shopping Cart
           <span>Change</span>
           <span className="font-bold text-green-600">
             ₱{lastSale.change.toLocaleString()}
+          </span>
+        </div>
+
+        {/* 🔥 PROFIT SECTION */}
+        <div className="flex justify-between">
+          <span>Profit</span>
+          <span className="font-bold text-green-600">
+            + ₱{lastSale.items
+              .reduce(
+                (sum, item) =>
+                  sum + (item.qty * (item.selling_price - item.cost_price || 0)),
+                0
+              )
+              .toLocaleString()}
           </span>
         </div>
 
