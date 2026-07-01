@@ -22,22 +22,163 @@ import { supabase } from "../services/supabase";
 const Dashboard = () => {
 
   const [chartData, setChartData] = useState([]);
-const [period, setPeriod] = useState("week");
+const [revenuePeriod, setRevenuePeriod] = useState("week");
+const [profitPeriod, setProfitPeriod] = useState("week");
   const [totalSales, setTotalSales] = useState(0);
   const [transactions, setTransactions] = useState(0);
-  const [products, setProducts] = useState(0);
+
   const [lowStock, setLowStock] = useState([]);
   const [recentSales, setRecentSales] = useState([]);
+  const [profitChartData, setProfitChartData] = useState([]);
 
-  async function fetchDashboardData() {
-    await Promise.all([
-      fetchTotalSales(),
-      fetchTransactions(),
-      fetchProducts(),
-      fetchLowStock(),
-      fetchRecentSales(),
-    ]);
+
+  
+  async function fetchProfitChart() {
+const { data, error } = await supabase
+  .from("sale_items")
+  .select("quantity, selling_price, cost_price, created_at");
+
+if (error) {
+  console.error(error);
+  return;
+}
+
+if (!data || data.length === 0) {
+  setProfitChartData([]);
+  return;
+}
+
+  const today = new Date();
+  let grouped = {};
+
+  if (profitPeriod  === "week") {
+    const week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    week.forEach(day => grouped[day] = 0);
+
+    const start = new Date(today);
+    start.setDate(today.getDate() - today.getDay());
+    start.setHours(0,0,0,0);
+
+    data.forEach(item => {
+      if (!item.created_at) return;
+
+      const date = new Date(item.created_at);
+
+      if (date >= start) {
+      const profit =
+        ((Number(item.selling_price) || 0) -
+          (Number(item.cost_price) || 0)) *
+        (Number(item.quantity) || 0);
+
+        grouped[week[date.getDay()]] += profit;
+      }
+    });
   }
+
+  if (profitPeriod  === "month") {
+    const daysInMonth = new Date(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      0
+    ).getDate();
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      grouped[i] = 0;
+    }
+
+    data.forEach(item => {
+      if (!item.created_at) return;
+
+      const date = new Date(item.created_at);
+
+      if (
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear()
+      ) {
+const profit =
+  ((Number(item.selling_price) || 0) -
+    (Number(item.cost_price) || 0)) *
+  (Number(item.quantity) || 0);
+
+        grouped[date.getDate()] += profit;
+      }
+    });
+  }
+
+  if (profitPeriod  === "year") {
+    const months = [
+      "Jan","Feb","Mar","Apr","May","Jun",
+      "Jul","Aug","Sep","Oct","Nov","Dec"
+    ];
+
+    months.forEach(month => grouped[month] = 0);
+
+    data.forEach(item => {
+      if (!item.created_at) return;
+
+      const date = new Date(item.created_at);
+
+      if (date.getFullYear() === today.getFullYear()) {
+const profit =
+  ((Number(item.selling_price) || 0) -
+    (Number(item.cost_price) || 0)) *
+  (Number(item.quantity) || 0);
+
+        grouped[months[date.getMonth()]] += profit;
+      }
+    });
+  }
+
+  setProfitChartData(
+    Object.keys(grouped).map(key => ({
+      name: key,
+      profit: grouped[key],
+    }))
+  );
+}
+
+const [todayProfit, setTodayProfit] = useState(0);
+
+async function fetchTodayProfit() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const { data, error } = await supabase
+    .from("sale_items")
+    .select("quantity, selling_price, cost_price")
+    .gte("created_at", today.toISOString())
+    .lt("created_at", tomorrow.toISOString());
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  const total = (data ?? []).reduce((sum, item) => {
+    return (
+      sum +
+      ((Number(item.selling_price) || 0) -
+        (Number(item.cost_price) || 0)) *
+      (Number(item.quantity) || 0)
+    );
+  }, 0);
+
+  setTodayProfit(total);
+}
+
+async function fetchDashboardData() {
+  await Promise.all([
+    fetchTotalSales(),
+    fetchTransactions(),
+    fetchLowStock(),
+    fetchRecentSales(),
+    fetchTodayProfit(),
+  ]);
+}
 
   // =======================
   // TOTAL SALES
@@ -80,18 +221,7 @@ const [period, setPeriod] = useState("week");
   // =======================
   // PRODUCTS
   // =======================
-  async function fetchProducts() {
-    const { count, error } = await supabase
-      .from("products")
-      .select("*", {
-        count: "exact",
-        head: true,
-      });
-
-    if (!error) {
-      setProducts(count || 0);
-    }
-  }
+  
 
   // =======================
   // LOW STOCK
@@ -147,7 +277,7 @@ async function fetchRevenue() {
   const today = new Date();
   let grouped = {};
 
-  if (period === "week") {
+  if (revenuePeriod === "week") {
     const week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     // initialize all days
@@ -166,7 +296,7 @@ async function fetchRevenue() {
     });
   }
 
-if (period === "month") {
+if (revenuePeriod   === "month") {
   const today = new Date();
 
   const daysInMonth = new Date(
@@ -193,7 +323,7 @@ if (period === "month") {
   });
 }
 
-  if (period === "year") {
+  if (revenuePeriod  === "year") {
     const months = [
       "Jan","Feb","Mar","Apr","May","Jun",
       "Jul","Aug","Sep","Oct","Nov","Dec"
@@ -220,8 +350,15 @@ if (period === "month") {
 
 useEffect(() => {
   fetchDashboardData();
+}, []);
+
+useEffect(() => {
   fetchRevenue();
-}, [period]);
+}, [revenuePeriod]);
+
+useEffect(() => {
+  fetchProfitChart();
+}, [profitPeriod]);
 
   return (
     <div className="p-6">
@@ -238,7 +375,7 @@ useEffect(() => {
       </div>
 
       {/* SUMMARY CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-6xl mx-auto mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
         <Card
           title="Total Sales"
@@ -253,37 +390,42 @@ useEffect(() => {
         />
 
         <Card
-          title="Total Products"
-          value={products}
-          icon={Package}
-        />
-
-        <Card
           title="Low Stock"
           value={lowStock.length}
           icon={AlertTriangle}
         />
 
+      <Card
+        title="Today's Profit"
+        value={`₱ ${todayProfit.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`}
+        icon={DollarSign}
+      />
+
       </div>
 
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
       {/* REVENUE CHART */}
-<div className="max-w-6xl mx-auto mb-5 bg-white rounded-xl shadow border p-4">
+<div className="bg-white rounded-xl shadow border p-4 w-full">
 
   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
 
     <div>
       <h2 className="font-semibold text-lg">
-        Revenue Overview
+        Total Sales Overview
       </h2>
 
       <p className="text-xs text-gray-500">
-        Revenue by {period}
+        Sales by {revenuePeriod}
       </p>
     </div>
 
     <select
-      value={period}
-      onChange={(e) => setPeriod(e.target.value)}
+      value={revenuePeriod}
+      onChange={(e) => setRevenuePeriod(e.target.value)}
       className="border rounded-lg px-3 py-2 text-sm"
     >
       <option value="week">This Week</option>
@@ -336,8 +478,85 @@ useEffect(() => {
 
 </div>
 
+      {/* Profit CHART */}
+<div className="bg-white rounded-xl shadow border p-4 w-full">
+
+  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+
+    <div>
+    <h2 className="font-semibold text-lg">
+      Profit Overview
+    </h2>
+
+    <p className="text-xs text-gray-500">
+      Profit by {profitPeriod}
+    </p>
+    </div>
+
+<div className="flex text-sm justify-end mb-6">
+  <select
+    value={profitPeriod}
+    onChange={(e) => setProfitPeriod(e.target.value)}
+    className="border rounded-lg px-3 py-2"
+  >
+    <option value="week">This Week</option>
+    <option value="month">This Month</option>
+    <option value="year">This Year</option>
+  </select>
+</div>
+
+  </div>
+
+  <div className="h-64">
+
+    <ResponsiveContainer width="100%" height="100%">
+
+      <LineChart
+        data={profitChartData}
+        margin={{
+          top: 5,
+          right: 10,
+          left: -9,
+          bottom: 5,
+        }}
+      >
+
+        <CartesianGrid strokeDasharray="3 3" />
+
+        <XAxis dataKey="name" />
+
+        <YAxis  tickFormatter={(value) => `₱${value}`}/>
+
+      <Tooltip
+        formatter={(value) => [
+          `₱${Number(value).toLocaleString(undefined,{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2,
+          })}`,
+          "Profit",
+        ]}
+      />
+
+      <Line
+        type="monotone"
+        dataKey="profit"
+        stroke="#16a34a"
+        strokeWidth={3}
+        dot={{ r: 4 }}
+      />
+
+      </LineChart>
+
+    </ResponsiveContainer>
+
+  </div>
+
+</div>
+
+</div>
+
       {/* BOTTOM WIDGETS */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mx-auto">
 
         {/* LOW STOCK */}
         <div className="bg-white rounded-xl shadow-sm border p-5 h-[500px] flex flex-col">

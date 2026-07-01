@@ -144,7 +144,8 @@ const checkout = () => {
 
 async function nextSale() {
   try {
-    const { error: saleError } = await supabase
+    // Insert sale and get its ID
+    const { data: sale, error: saleError } = await supabase
       .from("sales")
       .insert([
         {
@@ -154,13 +155,35 @@ async function nextSale() {
           change: lastSale.change,
           created_at: new Date().toISOString(),
         },
-      ]);
+      ])
+      .select()
+      .single();
 
     if (saleError) {
       toast.error(saleError.message);
       return;
     }
 
+    // Insert every item into sale_items
+    const saleItems = lastSale.items.map(item => ({
+      sale_id: sale.id,
+      product_id: item.id,
+      quantity: item.qty,
+      selling_price: item.selling_price,
+      cost_price: item.cost_price,
+      created_at: new Date().toISOString(),
+    }));
+
+    const { error: itemError } = await supabase
+      .from("sale_items")
+      .insert(saleItems);
+
+    if (itemError) {
+      toast.error(itemError.message);
+      return;
+    }
+
+    // Update stock
     for (const item of lastSale.items) {
       const { error } = await supabase
         .from("products")
@@ -226,28 +249,37 @@ function backToPOS() {
   {/* FIXED GRID HEIGHT */}
   <div className="h-[420px] overflow-y-auto pr-2">
 
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
 
       {filteredProducts.map((product) => (
         <button
           key={product.id}
           onClick={() => addToCart(product)}
-          className="bg-white border border-gray-900 rounded-2xl p-4 text-left hover:border-orange-500 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+          className="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-500 hover:shadow-xl"
         >
-          <h2 className="font-semibold text-gray-800 line-clamp-2">{product.name}</h2>
+          <div className="flex justify-between items-start">
+            <h2 className="font-semibold text-gray-800 line-clamp-2">
+              {product.name}
+            </h2>
 
-          <p className="text-xl font-bold text-orange-600 mt-2">
-            ₱{product.selling_price}
-          </p>
-
-          <div className="mt-0 flex justify-between items-center">
-            <span className="text-xs text-gray-500">
-              Stock:
-            </span>
-            <span className="px-2 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
+            <span
+              className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                product.stock <= 5
+                  ? "bg-red-100 text-red-600"
+                  : "bg-green-100 text-green-600"
+              }`}
+            >
               {product.stock}
             </span>
           </div>
+
+          <p className="mt-4 text-2xl font-bold text-orange-600">
+            ₱{Number(product.selling_price).toLocaleString()}
+          </p>
+
+          <button className="mt-5 w-full rounded-xl bg-orange-100 py-2 text-sm font-semibold text-orange-600 transition group-hover:bg-orange-600 group-hover:text-white">
+            Add to Cart
+          </button>
         </button>
       ))}
 
@@ -257,7 +289,21 @@ function backToPOS() {
 {/* CART */}
 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 flex flex-col h-[80vh]">
 
-  <h2 className="text-xl font-bold mb-4">Cart</h2>
+  <div className="flex items-center justify-between mb-5">
+
+<div>
+<h2 className="text-xl font-bold">
+Shopping Cart
+</h2>
+
+<p className="text-sm text-gray-500">
+{cart.length} item(s)
+</p>
+
+</div>
+
+
+</div>
 
   {/* SCROLL AREA */}
   <div className="flex-1 overflow-y-auto space-y-3 pr-2">
@@ -267,7 +313,7 @@ function backToPOS() {
     )}
 
     {cart.map((item) => (
-      <div key={item.id} className="bg-gray-50 border border-gray-900 rounded-xl p-3 hover:bg-white transition">
+      <div key={item.id} className="bg-gray-50  border border-gray-400 rounded-xl p-3 hover:bg-white transition">
         <div className="flex justify-between">
           <div>
             <h3 className="font-semibold">{item.name}</h3>

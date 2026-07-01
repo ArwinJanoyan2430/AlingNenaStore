@@ -1,4 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import Card from "../components/Card";
+import {
+  Boxes,
+  Wallet,
+  AlertTriangle,
+  ArrowRight
+} from "lucide-react";
 
 import {
     getProducts,
@@ -17,7 +24,6 @@ export default function Products() {
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
-
     const [loading, setLoading] = useState(true);
 
     const [search, setSearch] = useState("");
@@ -187,51 +193,84 @@ async function fetchCategories() {
                 </h1>
 
                 <p className="text-white">
-                    {filteredProducts.length} Product(s)
+                    Product management and inventory overview
                 </p>
 
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-  {/* Total Inventory Value */}
-  <div className="bg-white rounded-xl shadow border p-5">
-    <p className="text-sm text-gray-500">
-      Total Inventory Value
-    </p>
+  {/* Inventory Value */}
+  <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
-    <h2 className="text-3xl font-bold text-green-600 mt-2">
-      ₱{totalInventoryValue.toLocaleString()}
-    </h2>
+    <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-green-100 opacity-40 blur-2xl group-hover:scale-125 transition-all" />
 
-    <p className="text-xs text-gray-400 mt-1">
-      Based on cost price × current stock
-    </p>
+    <div className="relative flex items-center justify-between">
+
+      <div>
+        <p className="text-sm font-medium uppercase tracking-wide text-gray-500">
+          Inventory Value
+        </p>
+
+        <h2 className="mt-2 text-3xl font-bold text-gray-900">
+          ₱{totalInventoryValue.toLocaleString()}
+        </h2>
+
+        <p className="mt-2 text-xs text-gray-400">
+          Cost Price × Current Stock
+        </p>
+      </div>
+
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-700 shadow-lg transition-all duration-300 group-hover:rotate-6 group-hover:scale-110">
+        <Wallet size={30} className="text-white" />
+      </div>
+
+    </div>
+
+    <div className="mt-6 h-1 w-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-700 transition-all duration-300 group-hover:w-full" />
+
   </div>
 
+    {/* Total Products */}
+  <Card
+    title="Total Products"
+    value={products.length}
+    icon={Boxes}
+  />
+
   {/* Low Stock */}
-  <div className="bg-white rounded-xl shadow border p-5">
-<div className="flex items-center justify-between">
-  <p className="text-sm font-medium text-gray-500">
-    Low Stock Products
-  </p>
+  <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
-<p
-  onClick={() => navigate("/app/dashboard")}
-  className="cursor-pointer text-xs font-medium text-orange-600 hover:text-orange-700"
->
-  View Low Stock →
-</p>
-</div>
-    
-    <h2 className="text-3xl font-bold text-red-600 mt-2">
-      {lowStockCount}
-    </h2>
+    <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-red-100 opacity-40 blur-2xl group-hover:scale-125 transition-all" />
 
-    <p className="text-xs text-gray-400 mt-1">
-      Products below minimum stock
-    </p>
-    
+    <div className="relative flex items-center justify-between">
+
+      <div>
+        <p className="text-sm font-medium uppercase tracking-wide text-gray-500">
+          Low Stock
+        </p>
+
+        <h2 className="mt-2 text-3xl font-bold text-gray-900">
+          {lowStockCount}
+        </h2>
+
+        <button
+          onClick={() => navigate("/app/dashboard")}
+          className="mt-2 flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700"
+        >
+          View Items
+          <ArrowRight size={14} />
+        </button>
+      </div>
+
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-rose-700 shadow-lg transition-all duration-300 group-hover:rotate-6 group-hover:scale-110">
+        <AlertTriangle size={30} className="text-white" />
+      </div>
+
+    </div>
+
+    <div className="mt-6 h-1 w-16 rounded-full bg-gradient-to-r from-red-500 to-rose-700 transition-all duration-300 group-hover:w-full" />
+
   </div>
 
 </div>
