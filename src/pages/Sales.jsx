@@ -7,10 +7,33 @@ export default function Sales() {
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
   const [showDelete, setShowDelete] = useState(false);
-
+  const [timeLeft, setTimeLeft] = useState("");
   useEffect(() => {
     fetchSales();
   }, []);
+  useEffect(() => {
+  const updateCountdown = () => {
+    const now = new Date();
+
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0); // next 12:00 AM
+
+    const diff = midnight - now;
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    setTimeLeft(
+      `${hours}h ${minutes}m ${seconds}s`
+    );
+  };
+
+  updateCountdown();
+  const interval = setInterval(updateCountdown, 1000);
+
+  return () => clearInterval(interval);
+}, []);
 
   async function fetchSales() {
     setLoading(true);
@@ -158,7 +181,7 @@ const todaysTransactions = sales.filter((sale) => {
         </h2>
 
         <span className="mt-3 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700">
-          Resets at 12:00 AM
+          Resets in {timeLeft}
         </span>
       </div>
 

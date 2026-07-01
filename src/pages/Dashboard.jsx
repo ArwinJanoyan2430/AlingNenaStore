@@ -20,7 +20,7 @@ import Card from "../components/Card";
 import { supabase } from "../services/supabase";
 
 const Dashboard = () => {
-
+  const [timeLeft, setTimeLeft] = useState("");
   const [chartData, setChartData] = useState([]);
 const [revenuePeriod, setRevenuePeriod] = useState("week");
 const [profitPeriod, setProfitPeriod] = useState("week");
@@ -202,30 +202,24 @@ async function fetchDashboardData() {
     setTotalSales(total);
   }
 
-  // =======================
-  // TRANSACTIONS
-  // =======================
-  async function fetchTransactions() {
-    const { count, error } = await supabase
-      .from("sales")
-      .select("*", {
-        count: "exact",
-        head: true,
-      });
 
-    if (!error) {
-      setTransactions(count || 0);
-    }
+async function fetchTransactions() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const { count, error } = await supabase
+    .from("sales")
+    .select("*", {
+      count: "exact",
+      head: true,
+    })
+    .gte("created_at", today.toISOString());
+
+  if (!error) {
+    setTransactions(count || 0);
   }
+}
 
-  // =======================
-  // PRODUCTS
-  // =======================
-  
-
-  // =======================
-  // LOW STOCK
-  // =======================
   async function fetchLowStock() {
     const { data, error } = await supabase
       .from("products")
@@ -349,6 +343,30 @@ if (revenuePeriod   === "month") {
 }
 
 useEffect(() => {
+  const updateCountdown = () => {
+    const now = new Date();
+
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0); // next 12:00 AM
+
+    const diff = midnight - now;
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    setTimeLeft(
+      `${hours}h ${minutes}m ${seconds}s`
+    );
+  };
+
+  updateCountdown();
+  const interval = setInterval(updateCountdown, 1000);
+
+  return () => clearInterval(interval);
+}, []);
+
+useEffect(() => {
   fetchDashboardData();
 }, []);
 
@@ -383,11 +401,30 @@ useEffect(() => {
           icon={DollarSign}
         />
 
-        <Card
-          title="Transactions"
-          value={transactions}
-          icon={ShoppingCart}
-        />
+<div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+  {/* glow background */}
+  <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-orange-100 opacity-40 blur-2xl group-hover:scale-125 transition-all" />
+  <div className="relative flex items-center justify-between">
+    {/* text */}
+    <div>
+      <p className="text-sm uppercase tracking-wide font-medium text-gray-500">
+        Today's Transactions
+      </p>
+      <h2 className="mt-2 text-3xl font-bold text-gray-900">
+        {transactions}
+      </h2>
+      <span className="mt-3 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700">
+        Resets in {timeLeft}
+      </span>
+    </div>
+    {/* icon */}
+    <div className="flex -mt-6 h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-700 shadow-lg transition-all duration-300 group-hover:rotate-6 group-hover:scale-110">
+      <ShoppingCart className="text-white" size={28} />
+    </div>
+  </div>
+  {/* bottom line */}
+  <div className="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-700 transition-all duration-300 group-hover:w-full" />
+</div>
 
         <Card
           title="Low Stock"
@@ -409,7 +446,7 @@ useEffect(() => {
 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
       {/* REVENUE CHART */}
-<div className="bg-white rounded-xl shadow border p-4 w-full">
+<div className="bg-white rounded-xl shadow-lg border border-gray-300 p-4 w-full">
 
   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
 
@@ -479,7 +516,7 @@ useEffect(() => {
 </div>
 
       {/* Profit CHART */}
-<div className="bg-white rounded-xl shadow border p-4 w-full">
+<div className="bg-white rounded-xl shadow-lg border border-gray-300 p-4 w-full">
 
   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
 
@@ -559,7 +596,7 @@ useEffect(() => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mx-auto">
 
         {/* LOW STOCK */}
-        <div className="bg-white rounded-xl shadow-sm border p-5 h-[500px] flex flex-col">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-300 p-5 h-[500px] flex flex-col">
 
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
@@ -612,7 +649,7 @@ useEffect(() => {
         </div>
 
         {/* RECENT TRANSACTIONS */}
-        <div className="bg-white rounded-xl shadow-sm border p-5 h-[500px] flex flex-col">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-300 p-5 h-[500px] flex flex-col">
 
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-semibold">
