@@ -31,56 +31,71 @@ const Login = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-[300px] sm:max-w-sm bg-white/80 backdrop-blur-lg shadow-2xl rounded-2xl p-6 sm:p-8 border border-gray-100">
-        <div className="flex flex-col gap-4 ">
-          <div className="flex justify-center -mb-5">
-            <img src={logo} className="w-50 mx-auto mb-2" alt="logo" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-amber-50 px-4">
+      <div className="w-full max-w-sm bg-white/90 backdrop-blur-xl shadow-2xl rounded-3xl p-8 border border-gray-100 relative overflow-hidden">
+        {/* subtle glow */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-200 rounded-full blur-3xl opacity-40" />
+
+        <div className="relative flex flex-col gap-5">
+          {/* Logo */}
+          <div className="flex justify-center">
+            <img src={logo} className="w-60" alt="logo" />
           </div>
-          <div className="mb-5">
-            <h1 className="text-2xl font-bold text-gray-900 text-center">
-              Welcome Back
-            </h1>
-            <p className="text-gray-500 text-center">Login to continue</p>
+
+          {/* Title */}
+          <div className="text-center space-y-1">
+            <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
+            <p className="text-sm text-gray-500">Sign in to continue</p>
           </div>
-          <div className="space-y-3">
+
+          {/* Inputs */}
+          <div className="space-y-4">
+            {/* Username */}
             <div>
-              <h6 className="text-gray-500 text-xs">Username</h6>
+              <label className="text-xs text-gray-500">Username</label>
               <input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 type="text"
-                placeholder="username"
-                className="w-full px-4 py-3 text-[16px] rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-orange-900 focus:ring-4 focus:ring-amber-700/30"
+                placeholder="Enter username"
+                className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition"
               />
             </div>
 
-            <div className="relative">
-              <h6 className="text-gray-500 text-xs">Password</h6>
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                className="w-full px-4 py-3 pr-12 text-[16px] rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-orange-900 focus:ring-4 focus:ring-amber-700/30"
-              />
+            {/* Password */}
+            <div>
+              <label className="text-xs text-gray-500">Password</label>
 
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-10 right-3 flex items-center transition text-orange-900 hover:text-orange-900"
-              >
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
+              <div className="relative mt-1">
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter password"
+                  className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-orange-600 transition"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* Button */}
           <button
-            className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-amber-700 to-orange-900 text-white font-semibold hover:shadow-xl hover:scale-[1.02] active:scale-95 transition text-sm sm:text-base"
             onClick={handleLogin}
+            className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-semibold shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-95 transition"
           >
             Login
           </button>
-          <p className="text-center text-xs text-gray-400 mt-4">
+
+          {/* Footer */}
+          <p className="text-center text-xs text-gray-400 mt-2">
             © {new Date().getFullYear()} Arwin Janoyan. All rights reserved.
           </p>
         </div>
