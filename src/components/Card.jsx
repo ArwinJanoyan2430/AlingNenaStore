@@ -1,21 +1,17 @@
 const Card = ({ title, value, icon: Icon }) => {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-
       {/* Decorative Background */}
       <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-orange-100 opacity-40 blur-2xl transition-all duration-300 group-hover:scale-125" />
 
       <div className="relative flex items-center justify-between">
-
         {/* Text */}
         <div>
           <p className="text-sm font-medium tracking-wide text-gray-500 uppercase">
             {title}
           </p>
 
-          <h2 className="mt-2 text-3xl font-bold text-gray-900">
-            {value}
-          </h2>
+          <h2 className="mt-2 text-3xl font-bold text-gray-900">{value}</h2>
         </div>
 
         {/* Icon */}

@@ -8,7 +8,7 @@ import {
   LogOut,
   Menu,
   X,
-  ShoppingBag, 
+  ShoppingBag,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -29,7 +29,6 @@ const Sidebar = () => {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full text-gray-100">
-      
       {/* Header */}
       <div className="p-5 border-b border-gray-800">
         <div className="rounded-2xl bg-gradient-to-r from-orange-600 to-amber-700 p-[1px]">
@@ -40,13 +39,9 @@ const Sidebar = () => {
               </div>
 
               <div>
-                <h2 className="text-lg font-bold text-white">
-                  Omboy Store
-                </h2>
+                <h2 className="text-lg font-bold text-white">Omboy Store</h2>
 
-                <p className="text-xs text-gray-400">
-                  Point of Sale System
-                </p>
+                <p className="text-xs text-gray-400">Point of Sale System</p>
               </div>
             </div>
           </div>
@@ -70,7 +65,10 @@ const Sidebar = () => {
                     : "text-gray-300 hover:bg-white/10 hover:text-white"
                 }`}
             >
-              <item.icon size={18} className={active ? "text-white" : "text-gray-400"} />
+              <item.icon
+                size={18}
+                className={active ? "text-white" : "text-gray-400"}
+              />
               {item.name}
             </Link>
           );
