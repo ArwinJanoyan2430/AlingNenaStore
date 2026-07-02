@@ -111,14 +111,30 @@ setForm({
         : Number(form.stock_pieces || 0);
 
     const payload = {
-      name: form.name,
-      category_id: form.category_id || null,
-      cost_price: costPrice,
-      selling_price: Number(form.sell_per_piece || 0),
-      stock,
-      min_stock: Number(form.min_stock || 0),
-      status: form.status || "Active",
-    };
+  name: form.name,
+  category_id: form.category_id || null,
+
+  // Store cost per PIECE
+  cost_price:
+    mode === "pack"
+      ? Number(form.cost_per_pack || 0) / packSize
+      : Number(form.cost_per_piece || 0),
+
+  // Store selling price per PIECE
+  selling_price: Number(form.sell_per_piece || 0),
+
+  // ✅ Save pack size
+  pack_size: packSize,
+
+  // Store stock in PIECES
+  stock:
+    mode === "pack"
+      ? Number(form.stock_packs || 0) * packSize
+      : Number(form.stock_pieces || 0),
+
+  min_stock: Number(form.min_stock || 0),
+  status: form.status || "Active",
+};
 
     await onSave(payload);
 
