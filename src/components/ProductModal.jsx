@@ -46,22 +46,24 @@ export default function ProductModal({
     if (!show) return;
 
     if (product) {
-      setForm({
-        name: product.name ?? "",
-        category_id: product.category_id ?? "",
+      const packSize = product.pack_size ?? 10;
 
-        cost_per_pack: product.cost_price ?? "",
-        cost_per_piece: product.cost_price ?? "",
-        sell_per_piece: product.selling_price ?? "",
+setForm({
+  name: product.name ?? "",
+  category_id: product.category_id ?? "",
 
-        pack_size: product.pack_size ?? 10,
+  cost_per_pack: (product.cost_price ?? 0) * packSize,
+  cost_per_piece: product.cost_price ?? "",
+  sell_per_piece: product.selling_price ?? "",
 
-        stock_packs: product.stock ?? "",
-        stock_pieces: product.stock ?? "",
+  pack_size: packSize,
 
-        min_stock: product.min_stock ?? 5,
-        status: product.status ?? "Active",
-      });
+  stock_packs: (product.stock ?? 0) / packSize,
+  stock_pieces: product.stock ?? "",
+
+  min_stock: product.min_stock ?? 5,
+  status: product.status ?? "Active",
+});
 
       setMode(product.mode === "piece" ? "piece" : "pack");
     } else {
