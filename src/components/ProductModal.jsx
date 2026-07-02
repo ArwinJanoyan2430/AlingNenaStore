@@ -46,24 +46,30 @@ export default function ProductModal({
     if (!show) return;
 
     if (product) {
-      setForm({
-        name: product.name ?? "",
-        category_id: product.category_id ?? "",
+  const packSize = product.pack_size ?? 10;
 
-        cost_per_pack: product.cost_price ?? "",
-        cost_per_pack:
-  (product.cost_price ?? 0) * (product.pack_size ?? 1),
-        sell_per_piece: product.selling_price ?? "",
+  setForm({
+    name: product.name ?? "",
+    category_id: product.category_id ?? "",
 
-        pack_size: product.pack_size ?? 10,
+    // Convert piece cost back to pack cost for editing
+    cost_per_pack: (product.cost_price ?? 0) * packSize,
+    cost_per_piece: product.cost_price ?? "",
 
-        stock_packs:
-  (product.stock ?? 0) / (product.pack_size ?? 1),
-        stock_pieces: product.stock ?? "",
+    sell_per_piece: product.selling_price ?? "",
 
-        min_stock: product.min_stock ?? 5,
-        status: product.status ?? "Active",
-      });
+    pack_size: packSize,
+
+    // Convert piece stock back to packs for editing
+    stock_packs: (product.stock ?? 0) / packSize,
+    stock_pieces: product.stock ?? "",
+
+    min_stock: product.min_stock ?? 5,
+    status: product.status ?? "Active",
+  });
+
+  setMode(product.mode === "piece" ? "piece" : "pack");
+});
 
       setMode(product.mode === "piece" ? "piece" : "pack");
     } else {
@@ -111,14 +117,30 @@ export default function ProductModal({
         : Number(form.stock_pieces || 0);
 
     const payload = {
-      name: form.name,
-      category_id: form.category_id || null,
-      cost_price: costPrice,
-      selling_price: Number(form.sell_per_piece || 0),
-      stock,
-      min_stock: Number(form.min_stock || 0),
-      status: form.status || "Active",
-    };
+  name: form.name,
+  category_id: form.category_id || null,
+
+  // Store cost per PIECE
+  cost_price:
+    mode === "pack"
+      ? Number(form.cost_per_pack || 0) / packSize
+      : Number(form.cost_per_piece || 0),
+
+  // Store selling price per PIECE
+  selling_price: Number(form.sell_per_piece || 0),
+
+  // ✅ Save pack size
+  pack_size: packSize,
+
+  // Store stock in PIECES
+  stock:
+    mode === "pack"
+      ? Number(form.stock_packs || 0) * packSize
+      : Number(form.stock_pieces || 0),
+
+  min_stock: Number(form.min_stock || 0),
+  status: form.status || "Active",
+};
 
     await onSave(payload);
 
