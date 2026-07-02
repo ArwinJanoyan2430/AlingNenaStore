@@ -13,7 +13,9 @@ export default function Sales() {
   const [showFinalConfirm, setShowFinalConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
+
   async function fetchTotalProfit() {
+
     const { data, error } = await supabase
       .from("sale_items")
       .select("quantity, selling_price, cost_price");
@@ -72,7 +74,7 @@ export default function Sales() {
       .select(
         `
       *,
-      sale_items (
+      sale_items!sale_items_sale_id_fkey (
         quantity,
         selling_price,
         cost_price
