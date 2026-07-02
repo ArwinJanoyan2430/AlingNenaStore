@@ -127,197 +127,219 @@ export default function ProductModal({
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center">
-      <div className="w-full md:max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden grid md:grid-cols-2">
-        <div className="col-span-2 flex items-center justify-between px-6 py-4 border-b bg-orange-600">
-          <div>
-            <h2 className="text-xl font-semibold text-white">
-              {product ? "Edit Product" : "Add Product"}
-            </h2>
-            <p className="text-sm text-white ">
-              Manage product details and inventory
-            </p>
-          </div>
+  <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center overflow-y-auto p-0 md:p-4">
+    <div className="w-full max-w-md md:max-w-5xl bg-white rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 max-h-[95vh] overflow-y-auto">
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100"
-          >
-            <X size={20} />
-          </button>
+      {/* HEADER */}
+      <div className="md:col-span-2 flex items-center justify-between px-4 md:px-6 py-4 border-b bg-orange-600">
+        <div>
+          <h2 className="text-lg md:text-xl font-semibold text-white">
+            {product ? "Edit Product" : "Add Product"}
+          </h2>
+
+          <p className="text-xs md:text-sm text-white">
+            Manage product details and inventory
+          </p>
         </div>
-        {/* LEFT FORM */}
-        <div className="p-6 space-y-4">
-          {/* MODE */}
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-2 rounded-lg hover:bg-orange-500 text-white transition"
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      {/* LEFT */}
+      <div className="p-4 md:p-6 space-y-4">
+
+        <div className="sticky top-0 bg-white z-10 pb-2">
           <div className="flex bg-gray-100 p-1 rounded-xl">
             <button
               type="button"
               onClick={() => setMode("pack")}
-              className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${
-                mode === "pack" ? "bg-orange-600 text-white" : ""
+              className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 transition ${
+                mode === "pack"
+                  ? "bg-orange-600 text-white"
+                  : "text-gray-700"
               }`}
             >
-              <Layers size={16} /> Pack
+              <Layers size={16} />
+              Pack
             </button>
 
             <button
               type="button"
               onClick={() => setMode("piece")}
-              className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${
-                mode === "piece" ? "bg-orange-600 text-white" : ""
+              className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 transition ${
+                mode === "piece"
+                  ? "bg-orange-600 text-white"
+                  : "text-gray-700"
               }`}
             >
-              <Package size={16} /> Piece
+              <Package size={16} />
+              Piece
             </button>
           </div>
+        </div>
 
-          <Field label="Product Name">
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2"
-            />
-          </Field>
+        <Field label="Product Name">
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-3 text-base"
+          />
+        </Field>
 
-          <Field label="Category">
-            <select
-              required
-              name="category_id"
-              value={form.category_id}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-2 py-2"
-            >
-              <option value="">Select category</option>
+        <Field label="Category">
+          <select
+            required
+            name="category_id"
+            value={form.category_id}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-3 text-base"
+          >
+            <option value="">Select category</option>
 
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </Field>
 
-          {mode === "pack" ? (
-            <>
-              <Field label="Pieces per Pack">
-                <input
-                  name="pack_size"
-                  value={form.pack_size}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </Field>
-
-              <Field label="Cost per Pack">
-                <input
-                  name="cost_per_pack"
-                  value={form.cost_per_pack}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </Field>
-            </>
-          ) : (
-            <Field label="Cost per Piece">
+        {mode === "pack" ? (
+          <>
+            <Field label="Pieces per Pack">
               <input
-                name="cost_per_piece"
-                value={form.cost_per_piece}
+                name="pack_size"
+                value={form.pack_size}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border rounded-lg px-3 py-3 text-base"
               />
             </Field>
-          )}
 
-          <Field label="Selling Price">
+            <Field label="Cost per Pack">
+              <input
+                name="cost_per_pack"
+                value={form.cost_per_pack}
+                onChange={handleChange}
+                className="w-full border rounded-lg px-3 py-3 text-base"
+              />
+            </Field>
+          </>
+        ) : (
+          <Field label="Cost per Piece">
             <input
-              name="sell_per_piece"
-              value={form.sell_per_piece}
+              name="cost_per_piece"
+              value={form.cost_per_piece}
               onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-3 text-base"
             />
           </Field>
+        )}
 
-          <Field label={mode === "pack" ? "Stock (Packs)" : "Stock (Pieces)"}>
-            <input
-              name={mode === "pack" ? "stock_packs" : "stock_pieces"}
-              value={mode === "pack" ? form.stock_packs : form.stock_pieces}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2"
-            />
-          </Field>
+        <Field label="Selling Price">
+          <input
+            name="sell_per_piece"
+            value={form.sell_per_piece}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-3 text-base"
+          />
+        </Field>
 
-          <Field label="Minimum Stock">
-            <input
-              name="min_stock"
-              value={form.min_stock}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2"
-            />
-          </Field>
+        <Field label={mode === "pack" ? "Stock (Packs)" : "Stock (Pieces)"}>
+          <input
+            name={mode === "pack" ? "stock_packs" : "stock_pieces"}
+            value={mode === "pack" ? form.stock_packs : form.stock_pieces}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-3 text-base"
+          />
+        </Field>
 
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={onClose}
-              type="button"
-              className="w-full bg-gray-100 py-2 rounded-lg"
-            >
-              Cancel
-            </button>
+        <Field label="Minimum Stock">
+          <input
+            name="min_stock"
+            value={form.min_stock}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-3 py-3 text-base"
+          />
+        </Field>
 
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              className="w-full bg-orange-600 text-white py-2 rounded-lg"
-            >
-              Save
-            </button>
-          </div>
-        </div>
+        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+          <button
+            onClick={onClose}
+            type="button"
+            className="w-full bg-gray-100 hover:bg-gray-200 py-3 rounded-lg transition"
+          >
+            Cancel
+          </button>
 
-        {/* RIGHT LIVE PREVIEW */}
-        <div className="bg-gradient-to-br from-gray-50 to-white p-6 space-y-4">
-          <h3 className="font-semibold flex items-center gap-2">
-            <TrendingUp size={18} /> Live Analytics
-          </h3>
-
-          {/* PROFIT */}
-          <div className="bg-white border rounded-xl p-4">
-            <p className="text-sm text-gray-500">Profit per unit</p>
-            <p
-              className={`text-3xl font-bold ${profit >= 0 ? "text-green-600" : "text-red-600"}`}
-            >
-              ₱{profit.toFixed(2)}
-            </p>
-          </div>
-
-          {/* MARGIN */}
-          <div className="bg-white border rounded-xl p-4">
-            <p className="text-sm text-gray-500">Profit Margin</p>
-            <p className="text-2xl font-bold text-blue-600">{profitMargin}%</p>
-          </div>
-
-          {/* STOCK */}
-          <div className="bg-white border rounded-xl p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Total Stock</p>
-              <p className="text-2xl font-bold">{totalStock}</p>
-            </div>
-            <Boxes />
-          </div>
-
-          {/* COST INFO */}
-          <div className="bg-white border rounded-xl p-4 text-sm text-gray-600">
-            <p>
-              Cost per unit: <b>₱{costPerUnit.toFixed(2)}</b>
-            </p>
-            <p>
-              Selling price: <b>₱{sell.toFixed(2)}</b>
-            </p>
-          </div>
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-lg transition"
+          >
+            Save
+          </button>
         </div>
       </div>
+
+      {/* RIGHT */}
+      <div className="bg-gradient-to-br from-gray-50 to-white p-4 md:p-6 space-y-4">
+
+        <h3 className="font-semibold flex items-center gap-2">
+          <TrendingUp size={18} />
+          Live Analytics
+        </h3>
+
+        <div className="bg-white border rounded-xl p-4">
+          <p className="text-sm text-gray-500">Profit per unit</p>
+
+          <p
+            className={`text-2xl md:text-3xl font-bold ${
+              profit >= 0 ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            ₱{profit.toFixed(2)}
+          </p>
+        </div>
+
+        <div className="bg-white border rounded-xl p-4">
+          <p className="text-sm text-gray-500">Profit Margin</p>
+
+          <p className="text-xl md:text-2xl font-bold text-blue-600">
+            {profitMargin}%
+          </p>
+        </div>
+
+        <div className="bg-white border rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-500">Total Stock</p>
+
+            <p className="text-xl md:text-2xl font-bold">
+              {totalStock}
+            </p>
+          </div>
+
+          <Boxes size={26} />
+        </div>
+
+        <div className="bg-white border rounded-xl p-4 text-sm text-gray-600">
+          <p>
+            Cost per unit: <b>₱{costPerUnit.toFixed(2)}</b>
+          </p>
+
+          <p>
+            Selling price: <b>₱{sell.toFixed(2)}</b>
+          </p>
+        </div>
+
+      </div>
     </div>
-  );
+  </div>
+);
 }
