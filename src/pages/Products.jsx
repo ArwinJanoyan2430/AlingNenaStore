@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Card from "../components/Card";
 import { Boxes, Wallet, AlertTriangle, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import {
   getProducts,
@@ -32,7 +33,7 @@ export default function Products() {
   const totalInventoryValue = useMemo(() => {
     return products.reduce((total, product) => {
       return (
-        total + Number(product.cost_price || 0) * Number(product.stock || 0)
+        total + Number(product.cost_price ?? 0) * Number(product.stock ?? 0)
       );
     }, 0);
   }, [products]);
@@ -75,21 +76,7 @@ export default function Products() {
       setSelectedProduct(null);
     } catch (error) {
       console.error(error);
-      alert(error.message);
-    }
-  }
-
-  async function fetchCategories() {
-    console.log("Fetching categories...");
-
-    try {
-      const data = await getCategories();
-
-      console.log("Fetched categories:", data);
-
-      setCategories(data);
-    } catch (error) {
-      console.error("Category Error:", error);
+      toast.error(error.message);
     }
   }
 
@@ -127,7 +114,7 @@ export default function Products() {
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      const matchesSearch = product.name
+      const matchesSearch = (product.name ?? "")
         .toLowerCase()
         .includes(search.toLowerCase());
 
@@ -276,47 +263,71 @@ export default function Products() {
         </div>
 
         {/* Low Stock List */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-5 h-fit">
-          <div className="flex items-center justify-between mb-0">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
             <div>
-              <h2 className="font-semibold text-lg">Low Stock Items</h2>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Low Stock Items
+              </h2>
               <p className="text-sm text-gray-500">Restock these soon</p>
             </div>
 
-            <AlertTriangle className="text-red-500" size={22} />
+            <AlertTriangle size={20} className="text-red-500" />
           </div>
-          <div className="h-1 w-full bg-gray-200 rounded-full mt-2" />
 
-          {products.filter((p) => Number(p.stock) <= Number(p.min_stock || 5))
-            .length === 0 ? (
-            <p className="text-gray-500 text-sm mt-2">No low stock products.</p>
-          ) : (
-            <div className="space-y-0 max-h-[600px] overflow-y-auto pr-2 mt-2">
-              {products
-                .filter((p) => Number(p.stock) <= Number(p.min_stock || 5))
-                .sort((a, b) => a.stock - b.stock)
-                .map((product) => (
-                  <div
-                    key={product.id}
-                    className=" rounded-lg p-1 border border-gray-300 px-5 py-2 mt-2 hover:bg-gray-50 transition"
-                  >
-                    <div className="flex justify-between items-center">
+          {(() => {
+            const lowStockProducts = products
+              .filter((product) => {
+                const stockPacks =
+                  Number(product.stock) / Number(product.pack_size || 1);
+
+                return stockPacks <= Number(product.min_stock || 5);
+              })
+              .sort((a, b) => Number(a.stock) - Number(b.stock));
+
+            if (lowStockProducts.length === 0) {
+              return (
+                <p className="p-5 text-sm text-gray-500 text-center">
+                  No low stock products.
+                </p>
+              );
+            }
+
+            return (
+              <div className="max-h-[420px] overflow-y-auto divide-y divide-gray-100">
+                {lowStockProducts.map((product) => {
+                  const packSize = Number(product.pack_size || 1);
+                  const stock = Number(product.stock);
+
+                  const fullPacks = Math.floor(stock / packSize);
+                  const remainingPieces = stock % packSize;
+
+                  return (
+                    <div
+                      key={product.id}
+                      className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition"
+                    >
                       <div>
-                        <p className="font-medium">{product.name}</p>
+                        <p className="font-medium text-gray-800">
+                          {product.name}
+                        </p>
 
                         <p className="text-xs text-gray-500">
                           Min Stock: {product.min_stock || 5}
                         </p>
                       </div>
 
-                      <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">
-                        {product.stock} left
+                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                        {fullPacks > 0
+                          ? `${fullPacks} pack${fullPacks > 1 ? "s" : ""}`
+                          : `${remainingPieces} pc${remainingPieces !== 1 ? "s" : ""}`}
                       </span>
                     </div>
-                  </div>
-                ))}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       </div>
 

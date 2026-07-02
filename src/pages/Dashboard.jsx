@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { DollarSign, ShoppingCart, Package, AlertTriangle } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 import {
   ResponsiveContainer,
   LineChart,
@@ -22,7 +22,7 @@ const Dashboard = () => {
   const [profitPeriod, setProfitPeriod] = useState("week");
   const [totalSales, setTotalSales] = useState(0);
   const [transactions, setTransactions] = useState(0);
-
+  const navigate = useNavigate();
   const [lowStock, setLowStock] = useState([]);
   const [recentSales, setRecentSales] = useState([]);
   const [profitChartData, setProfitChartData] = useState([]);
@@ -35,16 +35,19 @@ const Dashboard = () => {
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
 
-    const { data, error } = await supabase
-      .from("sale_items")
+    const { data: sales, error } = await supabase
+      .from("sales")
       .select(
         `
-      quantity,
-      selling_price,
-      product_id,
-      products!sale_items_product_id_fkey (
-        id,
-        name
+      created_at,
+      sale_items (
+        quantity,
+        product_id,
+        products (
+          id,
+          name,
+          selling_price
+        )
       )
     `,
       )
@@ -56,31 +59,29 @@ const Dashboard = () => {
       return;
     }
 
-    const grouped = {};
+    const items = {};
 
-    data.forEach((item) => {
-      const id = item.product_id;
-      const name = item.products?.name ?? "Unknown Product";
+    sales.forEach((sale) => {
+      sale.sale_items.forEach((item) => {
+        const id = item.product_id;
 
-      if (!grouped[id]) {
-        grouped[id] = {
-          id,
-          name,
-          quantity: 0,
-          revenue: 0,
-        };
-      }
+        if (!items[id]) {
+          items[id] = {
+            id,
+            name: item.products.name,
+            quantity: 0,
+            revenue: 0,
+          };
+        }
 
-      grouped[id].quantity += Number(item.quantity);
-
-      grouped[id].revenue += Number(item.quantity) * Number(item.selling_price);
+        items[id].quantity += item.quantity;
+        items[id].revenue += item.quantity * item.products.selling_price;
+      });
     });
 
-    const top5 = Object.values(grouped)
-      .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 5);
+    const ranked = Object.values(items).sort((a, b) => b.quantity - a.quantity);
 
-    setBestSellers(top5);
+    setBestSellers(ranked);
   }
 
   async function fetchProfitChart() {
@@ -236,11 +237,11 @@ const Dashboard = () => {
       await Promise.all([
         fetchTotalSales(),
         fetchTransactions(),
-        fetchLowStock(),
         fetchTodayProfit(),
         fetchBestSellers(),
         fetchRevenue(),
         fetchProfitChart(),
+        fetchRecentSales(),
       ]);
     } catch (error) {
       console.error(error);
@@ -304,13 +305,19 @@ const Dashboard = () => {
   // RECENT SALES
   // =======================
   async function fetchRecentSales() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
     const { data, error } = await supabase
       .from("sales")
       .select("*")
-      .order("created_at", {
-        ascending: false,
-      })
-      .limit(5);
+      .gte("created_at", today.toISOString())
+      .lt("created_at", tomorrow.toISOString())
+      .order("created_at", { ascending: false })
+      .limit(10);
 
     if (error) {
       console.error(error);
@@ -415,25 +422,25 @@ const Dashboard = () => {
     );
   }
   useEffect(() => {
-  const channel = supabase
-    .channel("sales-realtime")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "sales",
-      },
-      () => {
-        fetchDashboardData(); // refresh everything
-      }
-    )
-    .subscribe();
+    const channel = supabase
+      .channel("sales-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "sales",
+        },
+        () => {
+          fetchDashboardData(); // refresh everything
+        },
+      )
+      .subscribe();
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, []);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -489,10 +496,14 @@ const Dashboard = () => {
       {/* SUMMARY CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card
-          title="Total Sales"
+          title="Total Revenue"
           value={`₱ ${totalSales.toLocaleString()}`}
           icon={DollarSign}
           color="blue"
+          action={{
+            label: "View Sales Report",
+            onClick: () => navigate("/app/sales"),
+          }}
         />
 
         <Card
@@ -503,6 +514,9 @@ const Dashboard = () => {
           })}`}
           icon={DollarSign}
           color="green"
+          action={{
+            label: "Based on today's sales",
+          }}
         />
 
         <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -530,7 +544,16 @@ const Dashboard = () => {
           <div className="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-700 transition-all duration-300 group-hover:w-full" />
         </div>
 
-        <Card title="Low Stock" value={lowStock.length} icon={AlertTriangle} color="red" />
+        <Card
+          title="Low Stock"
+          value={lowStock.length}
+          icon={AlertTriangle}
+          color="red"
+          action={{
+            label: "View Inventory",
+            onClick: () => navigate("/app/products"),
+          }}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -548,7 +571,7 @@ const Dashboard = () => {
             <select
               value={revenuePeriod}
               onChange={(e) => setRevenuePeriod(e.target.value)}
-              className="border rounded-lg px-3 py-2 text-sm"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
             >
               <option value="week">This Week</option>
               <option value="month">This Month</option>
@@ -605,7 +628,7 @@ const Dashboard = () => {
               <select
                 value={profitPeriod}
                 onChange={(e) => setProfitPeriod(e.target.value)}
-                className="border rounded-lg px-3 py-2"
+                className="border border-gray-300 rounded-lg px-3 py-2"
               >
                 <option value="week">This Week</option>
                 <option value="month">This Month</option>
@@ -656,40 +679,54 @@ const Dashboard = () => {
 
       {/* BOTTOM WIDGETS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mx-auto">
-        {/* LOW STOCK */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-300 p-5 h-[500px] flex flex-col">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
-              <AlertTriangle size={20} className="text-orange-600" />
-
-              <h2 className="font-semibold">Low Stock Items</h2>
+        {/* TODAY'S TRANSACTIONS */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-300 p-5 h-[400px] flex flex-col">
+          <div className="flex justify-between items-center mb-5">
+            <div>
+              <h2 className="font-semibold text-lg">Today's Transactions</h2>
+              <p className="text-sm text-gray-500">Latest sales today</p>
             </div>
 
-            <span className="text-sm text-gray-500">
-              {lowStock.length} item{lowStock.length !== 1 ? "s" : ""}
+            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
+              {recentSales.length} Sales
             </span>
           </div>
 
-          {lowStock.length === 0 ? (
-            <p className="text-gray-500 text-sm">No low stock products!</p>
+          {recentSales.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-gray-500 text-sm">No transactions today</p>
+            </div>
           ) : (
-            <div className="flex-1 overflow-y-auto pr-2 space-y-3">
-              {lowStock.map((item) => (
+            <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+              {recentSales.map((sale, index) => (
                 <div
-                  key={item.id}
-                  className="flex justify-between items-center border-b pb-2"
+                  key={sale.id}
+                  className="rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition"
                 >
-                  <div>
-                    <p className="font-medium">{item.name}</p>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold">
+                        #{String(recentSales.length - index).padStart(4, "0")}
+                      </p>
 
-                    <p className="text-xs text-gray-500">
-                      Product ID: {item.id}
-                    </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(sale.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="font-bold text-green-600">
+                        ₱{Number(sale.total).toFixed(2)}
+                      </p>
+
+                      <p className="text-xs text-gray-500">
+                        Profit ₱{Number(sale.profit).toFixed(2)}
+                      </p>
+                    </div>
                   </div>
-
-                  <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">
-                    {item.stock} left
-                  </span>
                 </div>
               ))}
             </div>
@@ -697,25 +734,27 @@ const Dashboard = () => {
         </div>
 
         {/* BEST SELLING PRODUCTS */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-300 p-5 h-[500px] flex flex-col">
-          <div className="flex justify-between items-center mb-5">
+        <div className="bg-white rounded-xl border border-gray-300 shadow-sm p-5 h-[400px] flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="font-semibold text-lg">Best Selling Products</h2>
-
-              <p className="text-sm text-gray-500">Top 5 products today</p>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Items Sold Today
+              </h2>
+              <p className="text-sm text-gray-500">Ranked by quantity sold</p>
             </div>
 
-            <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold">
-              🔥 Top Sellers
+            <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
+              {bestSellers.length} Items
             </span>
           </div>
 
           {bestSellers.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-gray-400">No sales yet today</p>
+            <div className="flex flex-1 items-center justify-center">
+              <p className="text-sm text-gray-500">No sales recorded today.</p>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+            <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
               {bestSellers.map((product, index) => {
                 const highest = bestSellers[0]?.quantity || 1;
                 const percent = (product.quantity / highest) * 100;
@@ -723,52 +762,43 @@ const Dashboard = () => {
                 return (
                   <div
                     key={product.id}
-                    className="rounded-xl border border-gray-200 p-4 hover:shadow-md transition"
+                    className="flex items-center justify-between py-4 hover:bg-gray-50 transition px-2 rounded-lg"
                   >
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold
-                  ${
-                    index === 0
-                      ? "bg-yellow-100 text-yellow-700"
-                      : index === 1
-                        ? "bg-gray-200 text-gray-700"
-                        : index === 2
-                          ? "bg-orange-100 text-orange-700"
-                          : "bg-gray-100 text-gray-600"
-                  }`}
-                        >
-                          #{index + 1}
-                        </div>
-
-                        <div>
-                          <p className="font-semibold">{product.name}</p>
-
-                          <p className="text-xs text-gray-500">
-                            {product.quantity} sold
-                          </p>
-                        </div>
+                    {/* Left */}
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 font-bold text-gray-700">
+                        {index + 1}
                       </div>
 
-                      <div className="text-right">
-                        <p className="font-bold text-green-600">
-                          ₱{Number(product.revenue).toLocaleString()}
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          {product.name}
                         </p>
 
-                        <p className="text-xs text-gray-400">Revenue</p>
+                        <p className="text-xs text-gray-500">
+                          {product.quantity} sold
+                        </p>
+
+                        <div className="mt-2 h-1.5 w-36 rounded-full bg-gray-200 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-orange-500"
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    <div className="mt-4">
-                      <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-600"
-                          style={{
-                            width: `${percent}%`,
-                          }}
-                        />
-                      </div>
+                    {/* Right */}
+                    <div className="text-right">
+                      <p className="font-bold text-green-600">
+                        ₱
+                        {Number(product.revenue).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+
+                      <p className="text-xs text-gray-500">Revenue</p>
                     </div>
                   </div>
                 );

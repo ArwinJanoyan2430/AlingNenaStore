@@ -13,9 +13,23 @@ export default function Sales() {
   const [showFinalConfirm, setShowFinalConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
+  const [reports, setReports] = useState([]);
+
+  async function fetchReports() {
+    const { data, error } = await supabase
+      .from("weekly_reports")
+      .select("*")
+      .order("generated_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setReports(data || []);
+  }
 
   async function fetchTotalProfit() {
-
     const { data, error } = await supabase
       .from("sale_items")
       .select("quantity, selling_price, cost_price");
@@ -38,7 +52,7 @@ export default function Sales() {
 
   useEffect(() => {
     async function loadData() {
-      await Promise.all([fetchSales(), fetchTotalProfit()]);
+      await Promise.all([fetchSales(), fetchTotalProfit(), fetchReports()]);
     }
 
     loadData();
@@ -291,182 +305,152 @@ export default function Sales() {
         </div>
       </div>
 
-      {/* Sales Table */}
-      <div className="bg-white rounded-xl shadow overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="text-left p-4">ID</th>
-              <th className="text-left p-4">Total</th>
-              <th className="text-left p-4">Profit</th>
-              <th className="text-left p-4">Cash</th>
-              <th className="text-left p-4">Change</th>
-              <th className="text-left p-4">Date</th>
-              <th className="text-left p-4">Action</th>
-            </tr>
-          </thead>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* ================= SALES TABLE ================= */}
+        <div className="xl:col-span-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Sales Transactions
+            </h2>
+            <p className="text-sm text-gray-500">
+              Complete history of all recorded sales.
+            </p>
+          </div>
 
-          <tbody>
-            {sales.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="p-5 text-center text-gray-500">
-                  No sales found
-                </td>
-              </tr>
-            ) : (
-              sales.map((sale, index) => (
-                <tr
-                  key={sale.id}
-                  className="border-t hover:bg-orange-50 transition"
-                >
-                  <td className="p-4 font-medium">
-                    #{String(sales.length - index).padStart(4, "0")}
-                  </td>
-
-                  <td className="p-4 font-bold text-green-600">
-                    ₱
-                    {Number(sale.total).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </td>
-
-                  <td className="p-4 font-semibold text-emerald-600">
-                    ₱
-                    {sale.profit.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </td>
-
-                  <td className="p-4">
-                    ₱
-                    {Number(sale.payment || 0).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </td>
-
-                  <td className="p-4">
-                    ₱
-                    {Number(sale.change || 0).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </td>
-
-                  <td className="p-4 text-sm text-gray-500">
-                    {new Date(sale.created_at).toLocaleString()}
-                  </td>
-
-                  <td className="p-4">
-                    <button
-                      onClick={() => {
-                        setDeleteId(sale.id);
-                        setShowDelete(true);
-                      }}
-                      className="flex items-center gap-2 px-3 py-1 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
-                    >
-                      <Trash2 size={16} />
-                      Delete
-                    </button>
-                  </td>
+          <div className="max-h-[650px] overflow-y-auto">
+            <table className="w-full">
+              <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
+                <tr className="text-sm uppercase tracking-wider text-gray-700">
+                  <th className="px-6 py-4 text-left">Sale ID</th>
+                  <th className="px-6 py-4 text-right">Revenue</th>
+                  <th className="px-6 py-4 text-right">Profit</th>
+                  <th className="px-6 py-4 text-right">Cash</th>
+                  <th className="px-6 py-4 text-right">Change</th>
+                  <th className="px-6 py-4 text-left">Date</th>
+                  <th className="px-6 py-4 text-center">Action</th>
                 </tr>
+              </thead>
+
+              <tbody className="divide-y divide-gray-100">
+                {sales.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-gray-500">
+                      No sales found.
+                    </td>
+                  </tr>
+                ) : (
+                  sales.map((sale, index) => (
+                    <tr key={sale.id} className="hover:bg-gray-50 transition">
+                      <td className="px-6 py-4 font-semibold">
+                        #{String(sales.length - index).padStart(4, "0")}
+                      </td>
+
+                      <td className="px-6 py-4 text-right font-semibold text-green-600">
+                        ₱{Number(sale.total).toLocaleString()}
+                      </td>
+
+                      <td className="px-6 py-4 text-right font-semibold text-emerald-600">
+                        ₱{Number(sale.profit).toLocaleString()}
+                      </td>
+
+                      <td className="px-6 py-4 text-right">
+                        ₱{Number(sale.payment).toLocaleString()}
+                      </td>
+
+                      <td className="px-6 py-4 text-right">
+                        ₱{Number(sale.change).toLocaleString()}
+                      </td>
+
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {new Date(sale.created_at).toLocaleString()}
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={() => {
+                            setDeleteId(sale.id);
+                            setShowDelete(true);
+                          }}
+                          className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-100"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ================= CSV ARCHIVE ================= */}
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm flex flex-col">
+          <div className="border-b border-gray-200 px-5 py-4">
+            <h2 className="text-lg font-semibold">Weekly CSV Reports</h2>
+
+            <p className="text-sm text-gray-500">
+              Automatically generated every Sunday.
+            </p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {reports.length === 0 ? (
+              <div className="flex h-full items-center justify-center p-10 text-gray-500">
+                No reports generated yet.
+              </div>
+            ) : (
+              reports.map((report) => (
+                <div key={report.id} className="border-b p-5 hover:bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold">
+                        Week {report.week_number}
+                      </h3>
+
+                      <p className="text-xs text-gray-500">
+                        {new Date(report.generated_at).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    <a
+                      href={report.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    >
+                      Download
+                    </a>
+                  </div>
+
+                  <div className="mt-4 space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span>Revenue</span>
+                      <span className="font-semibold text-green-600">
+                        ₱{Number(report.total_revenue).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>Profit</span>
+                      <span className="font-semibold text-emerald-600">
+                        ₱{Number(report.total_profit).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>Transactions</span>
+                      <span className="font-semibold">
+                        {report.total_transactions}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               ))
             )}
-          </tbody>
-        </table>
-      </div>
-
-
-      {/* CONFIRMATION MODAL */}
-      {showDelete && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          {/* STEP 1 */}
-          {!showFinalConfirm && (
-            <div className="bg-white rounded-xl p-6 w-[90%] max-w-md">
-              <h2 className="text-xl font-bold">Delete Transaction</h2>
-
-              <p className="text-gray-500 mt-2">
-                What would you like to delete?
-              </p>
-
-              <div className="space-y-3 mt-6">
-                <button
-                  onClick={() => {
-                    setDeleteMode("all");
-                    setShowFinalConfirm(true);
-                  }}
-                  className="w-full rounded-lg bg-red-600 text-white py-3 hover:bg-red-700"
-                >
-                  Delete Everything
-                  <p className="text-xs text-red-100 mt-1">
-                    Removes the sale and all sale items.
-                  </p>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setDeleteMode("keep");
-                    setShowFinalConfirm(true);
-                  }}
-                  className="w-full rounded-lg border border-orange-300 bg-orange-50 text-orange-700 py-3 hover:bg-orange-100"
-                >
-                  Keep Profit Record
-                  <p className="text-xs mt-1">
-                    Deletes only the sale. Sale items remain for profit reports.
-                  </p>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowDelete(false);
-                    setDeleteId(null);
-                    setDeleteMode(null);
-                    setShowFinalConfirm(false);
-                  }}
-                  className="w-full rounded-lg border py-2 hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 2 */}
-          {showFinalConfirm && (
-            <div className="bg-white rounded-xl p-6 w-[90%] max-w-sm">
-              <h2 className="text-xl font-bold text-red-600">Are you sure?</h2>
-
-              <p className="text-gray-500 mt-2">
-                {deleteMode === "all"
-                  ? "This will permanently delete the transaction and all profit records. This action cannot be undone."
-                  : "This will delete only the transaction. Profit records will remain."}
-              </p>
-
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  onClick={() => {
-                    setShowFinalConfirm(false);
-                    setDeleteMode(null);
-                  }}
-                  className="px-4 py-2 border rounded-lg hover:bg-gray-100"
-                >
-                  Back
-                </button>
-
-                <button
-                  disabled={deleting}
-                  onClick={() => confirmDelete(deleteMode === "all")}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {deleting ? "Deleting..." : "Yes, Delete"}
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

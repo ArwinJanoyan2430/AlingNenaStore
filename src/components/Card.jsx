@@ -3,48 +3,63 @@ const Card = ({
   value,
   icon: Icon,
   color = "orange",
+  action,
 }) => {
   const colors = {
     orange: {
       bg: "bg-orange-100",
       icon: "from-orange-500 to-amber-700",
+      text: "text-orange-600 hover:text-orange-700",
     },
     green: {
       bg: "bg-green-100",
       icon: "from-green-500 to-emerald-700",
+      text: "text-green-600 hover:text-green-700",
     },
     blue: {
       bg: "bg-blue-100",
       icon: "from-blue-500 to-indigo-700",
+      text: "text-blue-600 hover:text-blue-700",
     },
     red: {
       bg: "bg-red-100",
       icon: "from-red-500 to-rose-700",
+      text: "text-red-600 hover:text-red-700",
     },
     purple: {
       bg: "bg-purple-100",
       icon: "from-purple-500 to-violet-700",
+      text: "text-purple-600 hover:text-purple-700",
     },
   };
 
   const theme = colors[color] || colors.orange;
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-      {/* Decorative Background */}
+    <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+      {/* Background Glow */}
       <div
-        className={`absolute -right-8 -top-8 h-28 w-28 rounded-full ${theme.bg} opacity-40 blur-2xl transition-all duration-300 group-hover:scale-125`}
+        className={`absolute -top-8 -right-8 h-28 w-28 rounded-full ${theme.bg} opacity-40 blur-2xl group-hover:scale-125 transition`}
       />
 
       <div className="relative flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium tracking-wide text-gray-500 uppercase">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
             {title}
           </p>
 
           <h2 className="mt-2 text-3xl font-bold text-gray-900">
             {value}
           </h2>
+
+          {action && (
+            <button
+              onClick={action.onClick}
+              className={`mt-3 text-sm font-medium transition ${theme.text}`}
+            >
+              {action.label} →
+            </button>
+          )}
         </div>
 
         {Icon && (
