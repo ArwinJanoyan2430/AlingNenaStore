@@ -262,7 +262,7 @@ export default function Sales() {
                 {todaysTransactions}
               </h2>
 
-              <span className="mt-3 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700">
+              <span className="mt-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700">
                 Resets in {timeLeft}
               </span>
             </div>
@@ -272,7 +272,7 @@ export default function Sales() {
             </div>
           </div>
 
-          <div className="mt-6 h-1 w-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-700 transition-all duration-300 group-hover:w-full" />
+          <div className="mt-4 h-1 w-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-700 transition-all duration-300 group-hover:w-full" />
         </div>
 
         {/* Total Profit */}

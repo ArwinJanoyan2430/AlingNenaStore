@@ -242,6 +242,7 @@ const Dashboard = () => {
         fetchRevenue(),
         fetchProfitChart(),
         fetchRecentSales(),
+        fetchLowStock(),
       ]);
     } catch (error) {
       console.error(error);
@@ -287,18 +288,24 @@ const Dashboard = () => {
   async function fetchLowStock() {
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, stock")
-      .lte("stock", 5)
-      .order("stock", {
-        ascending: true,
-      });
+      .select("id, name, stock, min_stock, pack_size");
 
     if (error) {
       console.error(error);
       return;
     }
 
-    setLowStock(data || []);
+    const low = (data || []).filter((product) => {
+      const packSize = Number(product.pack_size || 1);
+      const stock = Number(product.stock || 0);
+      const minStock = Number(product.min_stock || 5);
+
+      const stockInPacks = stock / packSize;
+
+      return stockInPacks <= minStock;
+    });
+
+    setLowStock(low);
   }
 
   // =======================
@@ -541,7 +548,7 @@ const Dashboard = () => {
             </div>
           </div>
           {/* bottom line */}
-          <div className="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-700 transition-all duration-300 group-hover:w-full" />
+          <div className="mt-5 h-1 w-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-700 transition-all duration-300 group-hover:w-full" />
         </div>
 
         <Card

@@ -40,10 +40,14 @@ export default function Products() {
     }, 0);
   }, [products]);
 
+  const isLowStock = (product) => {
+    const packSize = Number(product.pack_size || 1);
+    const stockPacks = Number(product.stock) / packSize;
+    return stockPacks <= Number(product.min_stock || 5);
+  };
+
   const lowStockCount = useMemo(() => {
-    return products.filter(
-      (product) => Number(product.stock) <= Number(product.min_stock || 5),
-    ).length;
+    return products.filter(isLowStock).length;
   }, [products]);
 
   async function loadData() {
@@ -83,7 +87,7 @@ export default function Products() {
   }
 
   async function handleDelete() {
-    if (!productToDelete) return;
+    if (!productToDelete || deleting) return;
 
     try {
       setDeleting(true);
@@ -116,6 +120,13 @@ export default function Products() {
       setSelectedProduct(product);
       setShowModal(true);
     }, 0);
+  }
+
+  function resetDeleteState() {
+    setShowDeleteModal(false);
+    setShowFinalConfirm(false);
+    setProductToDelete(null);
+    setDeleting(false);
   }
 
   const filteredProducts = useMemo(() => {
@@ -238,12 +249,7 @@ export default function Products() {
 
                     <div className="mt-6 flex gap-3 pt-4 border-t border-gray-200">
                       <button
-                        onClick={() => {
-                          setShowDeleteModal(false);
-                          setProductToDelete(null);
-                          setShowFinalConfirm(false);
-                          setDeleting(false);
-                        }}
+                        onClick={resetDeleteState}
                         className="flex-1 rounded-xl border border-gray-300 py-3 font-medium text-gray-700 hover:bg-gray-100 transition"
                       >
                         Cancel
@@ -285,12 +291,7 @@ export default function Products() {
                       <button
                         onClick={async () => {
                           await handleDelete();
-
-                          if (!deleting) {
-                            setShowDeleteModal(false);
-                            setProductToDelete(null);
-                            setShowFinalConfirm(false);
-                          }
+                          resetDeleteState();
                         }}
                         disabled={deleting}
                         className="flex-1 rounded-xl bg-red-600 py-3 font-medium text-white hover:bg-red-700 transition disabled:opacity-50"

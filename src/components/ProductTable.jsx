@@ -59,7 +59,7 @@ export default function ProductTable({ products, onEdit, onDelete }) {
 
                     <td className="px-6 py-5 text-center">
                       <span
-                        className={`inline-flex min-w-[55px] justify-center rounded-full px-3 py-1 text-xs font-semibold ${badge}`}
+                        className={`inline-flex min-w-[50px] justify-center rounded-full px-3 py-1 text-xs font-semibold ${badge}`}
                       >
                         {product.stock}
                       </span>
