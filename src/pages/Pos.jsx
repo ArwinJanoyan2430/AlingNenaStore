@@ -235,7 +235,7 @@ export default function Pos() {
           </div>
 
           {/* FIXED GRID HEIGHT */}
-          <div className="h-[420px] overflow-y-auto pr-2">
+          <div className="h-[60vh] md:h-170 overflow-y-auto pr-2">
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
               {filteredProducts.map((product) => (
                 <button
@@ -371,7 +371,7 @@ export default function Pos() {
           <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[90vh] flex flex-col animate-in slide-in-from-bottom duration-300">
             {/* Header */}
             <div className="bg-gradient-to-r from-orange-500 to-amber-600 text-white p-5 rounded-t-3xl sm:rounded-t-2xl">
-              <h2 className="text-2xl font-bold">Sale Completed!</h2>
+              <h2 className="text-2xl font-bold">Confirm Transaction</h2>
 
               <p className="text-orange-100 text-sm">Transaction Summary</p>
             </div>

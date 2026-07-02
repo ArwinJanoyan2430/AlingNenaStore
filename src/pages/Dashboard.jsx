@@ -472,6 +472,17 @@ const Dashboard = () => {
           title="Total Sales"
           value={`₱ ${totalSales.toLocaleString()}`}
           icon={DollarSign}
+          color="blue"
+        />
+
+        <Card
+          title="Today's Profit"
+          value={`₱ ${todayProfit.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
+          icon={DollarSign}
+          color="green"
         />
 
         <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -499,16 +510,7 @@ const Dashboard = () => {
           <div className="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-700 transition-all duration-300 group-hover:w-full" />
         </div>
 
-        <Card title="Low Stock" value={lowStock.length} icon={AlertTriangle} />
-
-        <Card
-          title="Today's Profit"
-          value={`₱ ${todayProfit.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}`}
-          icon={DollarSign}
-        />
+        <Card title="Low Stock" value={lowStock.length} icon={AlertTriangle} color="red" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
