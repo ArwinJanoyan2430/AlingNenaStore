@@ -116,8 +116,13 @@ export default function Products() {
   }
 
   function handleEdit(product) {
-    setSelectedProduct(product);
-    setShowModal(true);
+    setShowModal(false); // FORCE reset first
+    setSelectedProduct(null);
+
+    setTimeout(() => {
+      setSelectedProduct(product);
+      setShowModal(true);
+    }, 0);
   }
 
   const filteredProducts = useMemo(() => {

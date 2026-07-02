@@ -1,38 +1,57 @@
-import { supabase } from '../services/supabase';
+import { supabase } from "../services/supabase";
 
+// GET PRODUCTS
 export async function getProducts() {
-    const { data, error } = await supabase
-        .from("products")
-        .select(`
-            *,
-            categories (
-                id,
-                name
-            )
-        `)
-        .order("name");
+  const { data, error } = await supabase
+    .from("products")
+    .select(`
+      *,
+      categories (
+        id,
+        name
+      )
+    `)
+    .order("name");
 
-    if (error) throw error;
+  if (error) throw error;
 
-    return data;
+  return data;
 }
 
+// ADD PRODUCT
 export async function addProduct(product) {
-    return await supabase
-        .from("products")
-        .insert([product]);
+  const { data, error } = await supabase
+    .from("products")
+    .insert([product])
+    .select(); // IMPORTANT
+
+  if (error) throw error;
+
+  return data;
 }
 
+// UPDATE PRODUCT
 export async function updateProduct(id, product) {
-    return await supabase
-        .from("products")
-        .update(product)
-        .eq("id", id);
+  const { data, error } = await supabase
+    .from("products")
+    .update(product)
+    .eq("id", id)
+    .select(); // IMPORTANT
+
+  if (error) throw error;
+
+  return data;
 }
 
+// DELETE PRODUCT
 export async function deleteProduct(id) {
-    return await supabase
-        .from("products")
-        .delete()
-        .eq("id", id);
+  const { data, error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", id)
+    .select(); // optional but useful for debugging
+
+  if (error) throw error;
+
+  return data;
 }
