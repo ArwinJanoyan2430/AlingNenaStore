@@ -8,9 +8,7 @@ export default function ProductToolbar({
 }) {
   return (
     <div className="bg-white rounded-2xl shadow border border-gray-200 p-4 mb-6">
-
       <div className="flex flex-col lg:flex-row gap-4">
-
         {/* Search */}
         <input
           type="text"
@@ -42,9 +40,7 @@ export default function ProductToolbar({
         >
           + Add Product
         </button>
-
       </div>
-
     </div>
   );
 }

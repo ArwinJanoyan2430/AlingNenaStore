@@ -1,11 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Package,
-  DollarSign,
-  Boxes,
-  Tag,
-  X,
-} from "lucide-react";
+import { Package, DollarSign, Boxes, Tag, X } from "lucide-react";
 
 export default function ProductModal({
   show,
@@ -59,8 +53,7 @@ export default function ProductModal({
 
   const profit = useMemo(() => {
     return (
-      Number(form.selling_price || 0) -
-      Number(form.cost_price || 0)
+      Number(form.selling_price || 0) - Number(form.cost_price || 0)
     ).toFixed(2);
   }, [form.cost_price, form.selling_price]);
 
@@ -82,20 +75,15 @@ export default function ProductModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center">
-
       <div className="w-full md:max-w-3xl h-[100dvh] md:h-auto md:max-h-[90vh] bg-white rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-5 flex items-center justify-between">
-
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">
               {product ? "Edit Product" : "Add Product"}
             </h2>
 
-            <p className="text-orange-100">
-              Manage your store inventory
-            </p>
+            <p className="text-orange-100">Manage your store inventory</p>
           </div>
 
           <button
@@ -105,7 +93,6 @@ export default function ProductModal({
           >
             <X size={24} />
           </button>
-
         </div>
 
         {/* Form */}
@@ -113,10 +100,8 @@ export default function ProductModal({
           onSubmit={handleSubmit}
           className="flex-1 overflow-y-auto p-5 md:p-8 space-y-6"
         >
-
           {/* Product & Category */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
             <div>
               <label className="mb-2 flex items-center gap-2 font-medium">
                 <Package size={18} />
@@ -154,12 +139,10 @@ export default function ProductModal({
                 ))}
               </select>
             </div>
-
           </div>
 
           {/* Prices */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
             <div>
               <label className="mb-2 flex items-center gap-2 font-medium">
                 <DollarSign size={18} />
@@ -191,12 +174,10 @@ export default function ProductModal({
                 className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
-
           </div>
 
           {/* Stock */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
             <div>
               <label className="mb-2 flex items-center gap-2 font-medium">
                 <Boxes size={18} />
@@ -213,9 +194,7 @@ export default function ProductModal({
             </div>
 
             <div>
-              <label className="mb-2 font-medium">
-                Minimum Stock
-              </label>
+              <label className="mb-2 font-medium">Minimum Stock</label>
 
               <input
                 type="number"
@@ -227,9 +206,7 @@ export default function ProductModal({
             </div>
 
             <div>
-              <label className="mb-2 font-medium">
-                Status
-              </label>
+              <label className="mb-2 font-medium">Status</label>
 
               <select
                 name="status"
@@ -241,25 +218,19 @@ export default function ProductModal({
                 <option value="Inactive">Inactive</option>
               </select>
             </div>
-
           </div>
 
           {/* Profit */}
           <div className="rounded-xl border border-green-200 bg-green-50 p-5">
-
-            <p className="text-sm text-gray-500">
-              Estimated Profit per Item
-            </p>
+            <p className="text-sm text-gray-500">Estimated Profit per Item</p>
 
             <h2 className="mt-2 text-3xl font-bold text-green-600">
               ₱{profit}
             </h2>
-
           </div>
 
           {/* Footer */}
           <div className="sticky bottom-0 bg-white border-t pt-5 flex flex-col sm:flex-row gap-3">
-
             <button
               type="button"
               onClick={onClose}
@@ -274,13 +245,9 @@ export default function ProductModal({
             >
               {product ? "Update Product" : "Save Product"}
             </button>
-
           </div>
-
         </form>
-
       </div>
-
     </div>
   );
 }

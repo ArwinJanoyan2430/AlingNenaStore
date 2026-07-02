@@ -1,13 +1,8 @@
-export default function ProductTable({
-  products,
-  onEdit,
-  onDelete,
-}) {
+export default function ProductTable({ products, onEdit, onDelete }) {
   return (
     <div className="bg-white rounded-xl shadow overflow-hidden">
       <div className="max-h-[550px] overflow-y-auto">
         <table className="w-full border-collapse">
-
           {/* HEADER */}
           <thead className="sticky top-0 bg-gray-100 z-10">
             <tr>
@@ -24,10 +19,7 @@ export default function ProductTable({
           <tbody>
             {products.length === 0 ? (
               <tr>
-                <td
-                  colSpan={7}
-                  className="py-5 text-center text-gray-500"
-                >
+                <td colSpan={7} className="py-5 text-center text-gray-500">
                   No products found.
                 </td>
               </tr>
@@ -37,17 +29,11 @@ export default function ProductTable({
                   key={product.id}
                   className="border-t hover:bg-gray-50 transition"
                 >
-
-
                   {/* Name */}
-                  <td className="p-4 font-medium">
-                    {product.name}
-                  </td>
+                  <td className="p-4 font-medium">{product.name}</td>
 
                   {/* Category */}
-                  <td className="p-4">
-                    {product.categories?.name ?? "-"}
-                  </td>
+                  <td className="p-4">{product.categories?.name ?? "-"}</td>
 
                   {/* Cost */}
                   <td className="p-4">
@@ -66,8 +52,8 @@ export default function ProductTable({
                         product.stock <= 5
                           ? "bg-red-100 text-red-700"
                           : product.stock <= 15
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-green-100 text-green-700"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-green-100 text-green-700"
                       }`}
                     >
                       {product.stock}
@@ -96,7 +82,6 @@ export default function ProductTable({
               ))
             )}
           </tbody>
-
         </table>
       </div>
     </div>
