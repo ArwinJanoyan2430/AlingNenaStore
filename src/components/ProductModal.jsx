@@ -8,6 +8,8 @@ import {
   Calculator,
 } from "lucide-react";
 
+import toast from "react-hot-toast";
+
 function Field({ label, children }) {
   return (
     <div className="space-y-1">
