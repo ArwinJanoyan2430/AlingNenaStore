@@ -556,7 +556,7 @@ const Dashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
         {/* REVENUE CHART */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-300 p-4 w-full">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
