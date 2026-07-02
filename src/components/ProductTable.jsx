@@ -26,7 +26,7 @@ export default function ProductTable({
               <tr>
                 <td
                   colSpan={7}
-                  className="py-12 text-center text-gray-500"
+                  className="py-5 text-center text-gray-500"
                 >
                   No products found.
                 </td>

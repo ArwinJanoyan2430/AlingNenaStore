@@ -20,6 +20,7 @@ import Card from "../components/Card";
 import { supabase } from "../services/supabase";
 
 const Dashboard = () => {
+  const [bestSellers, setBestSellers] = useState([]);
   const [timeLeft, setTimeLeft] = useState("");
   const [chartData, setChartData] = useState([]);
 const [revenuePeriod, setRevenuePeriod] = useState("week");
@@ -30,8 +31,62 @@ const [profitPeriod, setProfitPeriod] = useState("week");
   const [lowStock, setLowStock] = useState([]);
   const [recentSales, setRecentSales] = useState([]);
   const [profitChartData, setProfitChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+async function fetchBestSellers() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const { data, error } = await supabase
+    .from("sale_items")
+    .select(`
+      quantity,
+      selling_price,
+      product_id,
+      products!sale_items_product_id_fkey (
+        id,
+        name
+      )
+    `)
+    .gte("created_at", today.toISOString())
+    .lt("created_at", tomorrow.toISOString());
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  const grouped = {};
+
+  data.forEach((item) => {
+    const id = item.product_id;
+    const name = item.products?.name ?? "Unknown Product";
+
+    if (!grouped[id]) {
+      grouped[id] = {
+        id,
+        name,
+        quantity: 0,
+        revenue: 0,
+      };
+    }
+
+    grouped[id].quantity += Number(item.quantity);
+
+    grouped[id].revenue +=
+      Number(item.quantity) *
+      Number(item.selling_price);
+  });
+
+  const top5 = Object.values(grouped)
+    .sort((a, b) => b.quantity - a.quantity)
+    .slice(0, 5);
+
+  setBestSellers(top5);
+}
   
   async function fetchProfitChart() {
 const { data, error } = await supabase
@@ -171,13 +226,23 @@ async function fetchTodayProfit() {
 }
 
 async function fetchDashboardData() {
-  await Promise.all([
-    fetchTotalSales(),
-    fetchTransactions(),
-    fetchLowStock(),
-    fetchRecentSales(),
-    fetchTodayProfit(),
-  ]);
+  try {
+    setLoading(true);
+
+    await Promise.all([
+      fetchTotalSales(),
+      fetchTransactions(),
+      fetchLowStock(),
+      fetchTodayProfit(),
+      fetchBestSellers(),
+      fetchRevenue(),
+      fetchProfitChart(),
+    ]);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
 }
 
   // =======================
@@ -377,6 +442,14 @@ useEffect(() => {
 useEffect(() => {
   fetchProfitChart();
 }, [profitPeriod]);
+
+if (loading) {
+  return (
+    <div className="h-screen flex items-center justify-center">
+      <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
+    </div>
+  );
+}
 
   return (
     <div className="p-6">
@@ -648,57 +721,105 @@ useEffect(() => {
 
         </div>
 
-        {/* RECENT TRANSACTIONS */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-300 p-5 h-[500px] flex flex-col">
+{/* BEST SELLING PRODUCTS */}
+<div className="bg-white rounded-xl shadow-lg border border-gray-300 p-5 h-[500px] flex flex-col">
 
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold">
-              Recent Transactions
-            </h2>
+  <div className="flex justify-between items-center mb-5">
+    <div>
+      <h2 className="font-semibold text-lg">
+        Best Selling Products
+      </h2>
 
-            <span className="text-sm text-gray-500">
-              Latest 5
-            </span>
-          </div>
+      <p className="text-sm text-gray-500">
+        Top 5 products today
+      </p>
+    </div>
 
-          {recentSales.length === 0 ? (
-            <p className="text-gray-500 text-sm">
-              No transactions yet
-            </p>
-          ) : (
-            <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+    <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold">
+      🔥 Top Sellers
+    </span>
+  </div>
 
-              {recentSales.map((sale) => (
+  {bestSellers.length === 0 ? (
+    <div className="flex-1 flex items-center justify-center">
+      <p className="text-gray-400">
+        No sales yet today
+      </p>
+    </div>
+  ) : (
+    <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+
+      {bestSellers.map((product, index) => {
+        const highest = bestSellers[0]?.quantity || 1;
+        const percent = (product.quantity / highest) * 100;
+
+        return (
+          <div
+            key={product.id}
+            className="rounded-xl border border-gray-200 p-4 hover:shadow-md transition"
+          >
+            <div className="flex justify-between items-center">
+
+              <div className="flex items-center gap-3">
+
                 <div
-                  key={sale.id}
-                  className="flex justify-between items-center border-b pb-2"
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold
+                  ${
+                    index === 0
+                      ? "bg-yellow-100 text-yellow-700"
+                      : index === 1
+                      ? "bg-gray-200 text-gray-700"
+                      : index === 2
+                      ? "bg-orange-100 text-orange-700"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
                 >
-                  <div>
-                    <p className="font-medium">
-                      ₱{Number(sale.total).toLocaleString()}
-                    </p>
-
-                    <p className="text-xs text-gray-500">
-                      Payment: ₱{Number(sale.payment || 0).toLocaleString()}
-                    </p>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-xs text-green-600 font-semibold">
-                      Change: ₱{Number(sale.change || 0).toLocaleString()}
-                    </p>
-
-                    <p className="text-xs text-gray-400">
-                      {new Date(sale.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
+                  #{index + 1}
                 </div>
-              ))}
+
+                <div>
+                  <p className="font-semibold">
+                    {product.name}
+                  </p>
+
+                  <p className="text-xs text-gray-500">
+                    {product.quantity} sold
+                  </p>
+                </div>
+
+              </div>
+
+              <div className="text-right">
+                <p className="font-bold text-green-600">
+                  ₱{Number(product.revenue).toLocaleString()}
+                </p>
+
+                <p className="text-xs text-gray-400">
+                  Revenue
+                </p>
+              </div>
 
             </div>
-          )}
 
-        </div>
+            <div className="mt-4">
+              <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-600"
+                  style={{
+                    width: `${percent}%`,
+                  }}
+                />
+              </div>
+            </div>
+
+          </div>
+        );
+      })}
+
+    </div>
+  )}
+
+</div>
 
       </div>
 

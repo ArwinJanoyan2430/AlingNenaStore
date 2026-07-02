@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Card from "../components/Card";
-import {
-  Boxes,
-  Wallet,
-  AlertTriangle,
-  ArrowRight
-} from "lucide-react";
+import { Boxes, Wallet, AlertTriangle, Trash2 } from "lucide-react";
 
 import {
     getProducts,
@@ -15,17 +10,16 @@ import {
 } from "../services/productService";
 
 import { getCategories } from "../services/categoryServices";
-import { useNavigate } from "react-router-dom";
 import ProductToolbar from "../components/ProductToolbar";
 import ProductTable from "../components/ProductTable";
 import ProductModal from "../components/ProductModal";
 
 export default function Products() {
-    const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [productToDelete, setProductToDelete] = useState(null);
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("");
 
@@ -119,25 +113,23 @@ async function fetchCategories() {
     }
 }
 
-    async function handleDelete(id) {
+async function handleDelete() {
+  if (!productToDelete) return;
 
-        if (!window.confirm("Delete this product?")) return;
+  try {
+    await deleteProduct(productToDelete);
 
-        try {
+    setProducts(prev =>
+      prev.filter(product => product.id !== productToDelete)
+    );
 
-            await deleteProduct(id);
+    setShowDeleteModal(false);
+    setProductToDelete(null);
 
-            setProducts(prev =>
-                prev.filter(product => product.id !== id)
-            );
-
-        } catch (error) {
-
-            console.error(error);
-
-        }
-
-    }
+  } catch (error) {
+    console.error(error);
+  }
+}
 
     function handleAdd() {
 
@@ -254,13 +246,6 @@ async function fetchCategories() {
           {lowStockCount}
         </h2>
 
-        <button
-          onClick={() => navigate("/app/dashboard")}
-          className="mt-2 flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700"
-        >
-          View Items
-          <ArrowRight size={14} />
-        </button>
       </div>
 
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-rose-700 shadow-lg transition-all duration-300 group-hover:rotate-6 group-hover:scale-110">
@@ -273,6 +258,52 @@ async function fetchCategories() {
 
   </div>
 
+  {/* Delete Confirmation Modal */}
+{showDeleteModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6">
+
+      <div className="flex justify-center">
+        <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+          <Trash2 className="text-red-600" size={30} />
+        </div>
+      </div>
+
+      <h2 className="mt-4 text-2xl font-bold text-center text-gray-900">
+        Delete Product?
+      </h2>
+
+      <p className="mt-2 text-center text-gray-500">
+        Are you sure you want to delete this product?
+      </p>
+
+      <p className="mt-1 text-center text-sm text-red-500">
+        This action cannot be undone.
+      </p>
+
+      <div className="mt-8 flex gap-3">
+        <button
+          onClick={() => {
+            setShowDeleteModal(false);
+            setProductToDelete(null);
+          }}
+          className="flex-1 rounded-xl border border-gray-300 py-3 font-medium hover:bg-gray-100 transition"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleDelete}
+          className="flex-1 rounded-xl bg-red-600 py-3 font-medium text-white hover:bg-red-700 transition"
+        >
+          Delete
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+
 </div>
 
             <ProductToolbar
@@ -284,11 +315,80 @@ async function fetchCategories() {
                 onAddProduct={handleAdd}
             />
 
-            <ProductTable
-                products={filteredProducts}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-            />
+<div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+
+  {/* Products Table */}
+  <div className="xl:col-span-3">
+    <ProductTable
+        products={filteredProducts}
+        onEdit={handleEdit}
+        onDelete={(id) => {
+            setProductToDelete(id);
+            setShowDeleteModal(true);
+        }}
+    />
+  </div>
+
+  {/* Low Stock List */}
+  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-5 h-fit">
+
+    <div className="flex items-center justify-between mb-0">
+      <div>
+        <h2 className="font-semibold text-lg">
+          Low Stock Items
+        </h2>
+        <p className="text-sm text-gray-500">
+          Restock these soon
+        </p>
+      </div>
+
+      <AlertTriangle className="text-red-500" size={22} />
+    </div>
+    <div className="h-1 w-full bg-gray-200 rounded-full mt-2" />
+
+    {products.filter(
+      p => Number(p.stock) <= Number(p.min_stock || 5)
+    ).length === 0 ? (
+      <p className="text-gray-500 text-sm mt-2">
+        No low stock products.
+      </p>
+    ) : (
+      <div className="space-y-0 max-h-[600px] overflow-y-auto pr-2 mt-2">
+
+        {products
+          .filter(
+            p => Number(p.stock) <= Number(p.min_stock || 5)
+          )
+          .sort((a, b) => a.stock - b.stock)
+          .map(product => (
+            <div
+              key={product.id}
+              className=" rounded-lg p-1 border border-gray-300 px-5 py-2 mt-2 hover:bg-gray-50 transition"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium">
+                    {product.name}
+                  </p>
+
+                  <p className="text-xs text-gray-500">
+                    Min Stock: {product.min_stock || 5}
+                  </p>
+                </div>
+
+                <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">
+                  {product.stock} left
+                </span>
+              </div>
+            </div>
+          ))}
+
+      </div>
+    )}
+
+  </div>
+    
+</div>
 
             <ProductModal
                 show={showModal}
@@ -303,3 +403,4 @@ async function fetchCategories() {
     );
 
 }
+
