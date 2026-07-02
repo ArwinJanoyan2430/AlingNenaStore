@@ -414,6 +414,26 @@ const Dashboard = () => {
       })),
     );
   }
+  useEffect(() => {
+  const channel = supabase
+    .channel("sales-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "sales",
+      },
+      () => {
+        fetchDashboardData(); // refresh everything
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
 
   useEffect(() => {
     const updateCountdown = () => {
