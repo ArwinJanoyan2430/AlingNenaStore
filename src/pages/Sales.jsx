@@ -305,7 +305,7 @@ export default function Sales() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 xl:grid-cols-3 gap-6">
         {/* ================= SALES TABLE ================= */}
         <div className="xl:col-span-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div className="border-b border-gray-200 px-6 py-4">
@@ -317,7 +317,7 @@ export default function Sales() {
             </p>
           </div>
 
-          <div className="max-h-[650px] overflow-y-auto">
+          <div className="max-h-[500px] overflow-y-auto">
             <table className="w-full">
               <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
                 <tr className="text-sm uppercase tracking-wider text-gray-700">
@@ -371,7 +371,7 @@ export default function Sales() {
                             setDeleteId(sale.id);
                             setShowDelete(true);
                           }}
-                          className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-100"
+                          className="rounded-lg border border-gray-300  p-2 text-red-500 hover:bg-red-100"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -451,6 +451,102 @@ export default function Sales() {
           </div>
         </div>
       </div>
+      {showDelete && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+          onClick={() => {
+            setShowDelete(false);
+            setDeleteId(null);
+            setDeleteMode(null);
+          }}
+        >
+          <div
+            className="w-[92%] max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top danger bar */}
+              <div className="h-2 bg-red-500" />
+
+            {/* Header */}
+            <div className="bg-red-50 px-6 py-4 border-b border-red-100">
+              <h2 className="text-lg font-semibold text-red-700">
+                Delete Transaction
+              </h2>
+              <p className="text-sm text-red-500 mt-1">
+                Choose what you want to delete
+              </p>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-5">
+
+              {/* Choice Buttons */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => setDeleteMode("transaction")}
+                  className={`w-full text-left px-4 py-3 rounded-xl border transition ${
+                    deleteMode === "transaction"
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  <p className="font-medium text-gray-800">
+                    Delete transaction only
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Keeps product/item history, removes sale record only
+                  </p>
+                </button>
+
+                <button
+                  onClick={() => setDeleteMode("all")}
+                  className={`w-full text-left px-4 py-3 rounded-xl border transition ${
+                    deleteMode === "all"
+                      ? "border-red-600 bg-red-50"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  <p className="font-medium text-red-700">
+                    Delete transaction + profit data
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Removes sale + all related items (affects profit)
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t bg-gray-100 border-gray-200 flex justify-center gap-2">
+              <button
+                onClick={() => {
+                  setShowDelete(false);
+                  setDeleteId(null);
+                  setDeleteMode(null);
+                }}
+                className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={async () => {
+                  if (!deleteMode) return;
+
+                  await confirmDelete(deleteMode === "all");
+                  setShowDelete(false);
+                  setDeleteId(null);
+                  setDeleteMode(null);
+                }}
+                disabled={deleting || !deleteMode}
+                className="flex-1 py-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

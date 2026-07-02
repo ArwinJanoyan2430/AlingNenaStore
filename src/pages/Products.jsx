@@ -16,6 +16,8 @@ import ProductTable from "../components/ProductTable";
 import ProductModal from "../components/ProductModal";
 
 export default function Products() {
+  const [deleting, setDeleting] = useState(false);
+  const [showFinalConfirm, setShowFinalConfirm] = useState(false);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,16 +86,20 @@ export default function Products() {
     if (!productToDelete) return;
 
     try {
+      setDeleting(true);
+
       await deleteProduct(productToDelete);
 
       setProducts((prev) =>
         prev.filter((product) => product.id !== productToDelete),
       );
 
-      setShowDeleteModal(false);
-      setProductToDelete(null);
+      toast.success("Product deleted successfully");
     } catch (error) {
       console.error(error);
+      toast.error("Failed to delete product");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -197,43 +203,103 @@ export default function Products() {
 
         {/* Delete Confirmation Modal */}
         {showDeleteModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6">
-              <div className="flex justify-center">
-                <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-                  <Trash2 className="text-red-600" size={30} />
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div
+              className="w-[92%] max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Top danger bar */}
+              <div className="h-2 bg-red-500" />
+
+              <div className="p-6">
+                {/* Icon */}
+                <div className="flex justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center">
+                    <Trash2 className="text-red-600" size={28} />
+                  </div>
                 </div>
-              </div>
 
-              <h2 className="mt-4 text-2xl font-bold text-center text-gray-900">
-                Delete Product?
-              </h2>
+                {/* STEP 1 */}
+                {!showFinalConfirm ? (
+                  <>
+                    <h2 className="mt-5 text-center text-xl font-bold text-gray-900">
+                      Delete Product?
+                    </h2>
 
-              <p className="mt-2 text-center text-gray-500">
-                Are you sure you want to delete this product?
-              </p>
+                    <p className="mt-2 text-center text-gray-500 text-sm">
+                      This action will permanently remove this product.
+                    </p>
 
-              <p className="mt-1 text-center text-sm text-red-500">
-                This action cannot be undone.
-              </p>
+                    <div className="mt-5 rounded-xl bg-red-50 border border-red-100 p-3 text-center">
+                      <p className="text-xs text-red-600 font-medium">
+                        ⚠ This cannot be undone
+                      </p>
+                    </div>
 
-              <div className="mt-8 flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowDeleteModal(false);
-                    setProductToDelete(null);
-                  }}
-                  className="flex-1 rounded-xl border border-gray-300 py-3 font-medium hover:bg-gray-100 transition"
-                >
-                  Cancel
-                </button>
+                    <div className="mt-6 flex gap-3 pt-4 border-t border-gray-200">
+                      <button
+                        onClick={() => {
+                          setShowDeleteModal(false);
+                          setProductToDelete(null);
+                          setShowFinalConfirm(false);
+                          setDeleting(false);
+                        }}
+                        className="flex-1 rounded-xl border border-gray-300 py-3 font-medium text-gray-700 hover:bg-gray-100 transition"
+                      >
+                        Cancel
+                      </button>
 
-                <button
-                  onClick={handleDelete}
-                  className="flex-1 rounded-xl bg-red-600 py-3 font-medium text-white hover:bg-red-700 transition"
-                >
-                  Delete
-                </button>
+                      <button
+                        onClick={() => setShowFinalConfirm(true)}
+                        className="flex-1 rounded-xl bg-red-100 text-red-700 py-3 font-medium hover:bg-red-200 transition"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* STEP 2 */}
+                    <h2 className="mt-5 text-center text-xl font-bold text-red-600">
+                      Final Confirmation
+                    </h2>
+
+                    <p className="mt-2 text-center text-gray-600 text-sm">
+                      Are you sure you want to delete this product?
+                    </p>
+
+                    <div className="mt-5 rounded-xl bg-red-50 border border-red-200 p-3 text-center">
+                      <p className="text-xs text-red-600 font-semibold">
+                        This action is irreversible
+                      </p>
+                    </div>
+
+                    <div className="mt-6 flex gap-3 pt-4 border-t border-gray-200">
+                      <button
+                        onClick={() => setShowFinalConfirm(false)}
+                        className="flex-1 rounded-xl border border-gray-300 py-3 font-medium text-gray-700 hover:bg-gray-100 transition"
+                      >
+                        Back
+                      </button>
+
+                      <button
+                        onClick={async () => {
+                          await handleDelete();
+
+                          if (!deleting) {
+                            setShowDeleteModal(false);
+                            setProductToDelete(null);
+                            setShowFinalConfirm(false);
+                          }
+                        }}
+                        disabled={deleting}
+                        className="flex-1 rounded-xl bg-red-600 py-3 font-medium text-white hover:bg-red-700 transition disabled:opacity-50"
+                      >
+                        {deleting ? "Deleting..." : "Yes, Delete"}
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
