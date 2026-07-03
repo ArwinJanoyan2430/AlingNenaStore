@@ -35,20 +35,21 @@ export default function Products() {
   const totalInventoryValue = useMemo(() => {
     return products.reduce((total, product) => {
       return (
-        total + Number(product.cost_price ?? 0) * Number(product.stock ?? 0)
+        total + Number(product.stock || 0) * Number(product.cost_price || 0)
       );
     }, 0);
   }, [products]);
 
   const isLowStock = (product) => {
-    const packSize = Number(product.pack_size || 1);
-    const stockPacks = Number(product.stock) / packSize;
-    return stockPacks <= Number(product.min_stock || 5);
+    const stock = Number(product.stock || 0);
+    const minStock = Number(product.min_stock || 0);
+
+    return stock <= minStock;
   };
 
-  const lowStockCount = useMemo(() => {
-    return products.filter(isLowStock).length;
-  }, [products]);
+  const lowStockProducts = products
+    .filter(isLowStock)
+    .sort((a, b) => Number(a.stock) - Number(b.stock));
 
   async function loadData() {
     try {
@@ -58,7 +59,6 @@ export default function Products() {
         getProducts(),
         getCategories(),
       ]);
-
       setProducts(productsData);
       setCategories(categoriesData);
     } catch (error) {
@@ -169,7 +169,7 @@ export default function Products() {
                 Inventory Value
               </p>
 
-              <h2 className="mt-2 text-3xl font-bold text-gray-900">
+              <h2 className="mt-2 text-3xl font-bold text-green-500">
                 ₱{totalInventoryValue.toLocaleString()}
               </h2>
 
@@ -199,8 +199,8 @@ export default function Products() {
                 Low Stock
               </p>
 
-              <h2 className="mt-2 text-3xl font-bold text-gray-900">
-                {lowStockCount}
+              <h2 className="mt-2 text-3xl font-bold text-red-500">
+                {lowStockProducts.length}
               </h2>
             </div>
 
@@ -223,17 +223,10 @@ export default function Products() {
               <div className="h-2 bg-red-500" />
 
               <div className="p-6">
-                {/* Icon */}
-                <div className="flex justify-center">
-                  <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center">
-                    <Trash2 className="text-red-600" size={28} />
-                  </div>
-                </div>
-
                 {/* STEP 1 */}
                 {!showFinalConfirm ? (
                   <>
-                    <h2 className="mt-5 text-center text-xl font-bold text-gray-900">
+                    <h2 className="mt-0 text-center text-xl font-bold text-gray-900">
                       Delete Product?
                     </h2>
 
@@ -342,59 +335,42 @@ export default function Products() {
             <AlertTriangle size={20} className="text-red-500" />
           </div>
 
-          {(() => {
-            const lowStockProducts = products
-              .filter((product) => {
-                const stockPacks =
-                  Number(product.stock) / Number(product.pack_size || 1);
+          {lowStockProducts.length === 0 ? (
+            <p className="p-5 text-sm text-gray-500 text-center">
+              No low stock products.
+            </p>
+          ) : (
+            <div className="max-h-[420px] overflow-y-auto divide-y divide-gray-100">
+              {lowStockProducts.map((product) => {
+                const packSize = Number(product.pack_size || 1);
+                const stock = Number(product.stock);
 
-                return stockPacks <= Number(product.min_stock || 5);
-              })
-              .sort((a, b) => Number(a.stock) - Number(b.stock));
+                const fullPacks = Math.floor(stock / packSize);
+                const remainingPieces = stock % packSize;
 
-            if (lowStockProducts.length === 0) {
-              return (
-                <p className="p-5 text-sm text-gray-500 text-center">
-                  No low stock products.
-                </p>
-              );
-            }
+                return (
+                  <div
+                    key={product.id}
+                    className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-800">
+                        {product.name}
+                      </p>
 
-            return (
-              <div className="max-h-[420px] overflow-y-auto divide-y divide-gray-100">
-                {lowStockProducts.map((product) => {
-                  const packSize = Number(product.pack_size || 1);
-                  const stock = Number(product.stock);
-
-                  const fullPacks = Math.floor(stock / packSize);
-                  const remainingPieces = stock % packSize;
-
-                  return (
-                    <div
-                      key={product.id}
-                      className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition"
-                    >
-                      <div>
-                        <p className="font-medium text-gray-800">
-                          {product.name}
-                        </p>
-
-                        <p className="text-xs text-gray-500">
-                          Min Stock: {product.min_stock || 5}
-                        </p>
-                      </div>
-
-                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                        {fullPacks > 0
-                          ? `${fullPacks} pack${fullPacks > 1 ? "s" : ""}`
-                          : `${remainingPieces} pc${remainingPieces !== 1 ? "s" : ""}`}
-                      </span>
+                      <p className="text-xs text-gray-500">
+                        Min Stock: {product.min_stock || 5}
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
+
+                    <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                      {stock} left
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

@@ -288,7 +288,7 @@ const Dashboard = () => {
   async function fetchLowStock() {
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, stock, min_stock, pack_size");
+      .select("id, name, stock, min_stock");
 
     if (error) {
       console.error(error);
@@ -296,13 +296,10 @@ const Dashboard = () => {
     }
 
     const low = (data || []).filter((product) => {
-      const packSize = Number(product.pack_size || 1);
       const stock = Number(product.stock || 0);
-      const minStock = Number(product.min_stock || 5);
+      const minStock = Number(product.min_stock || 0);
 
-      const stockInPacks = stock / packSize;
-
-      return stockInPacks <= minStock;
+      return stock <= minStock;
     });
 
     setLowStock(low);

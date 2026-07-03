@@ -305,9 +305,9 @@ export default function Sales() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* ================= SALES TABLE ================= */}
-        <div className="xl:col-span-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="xl:col-span-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm w-full">
           <div className="border-b border-gray-200 px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-900">
               Sales Transactions
@@ -317,75 +317,94 @@ export default function Sales() {
             </p>
           </div>
 
-          <div className="max-h-[500px] overflow-y-auto">
-            <table className="w-full">
-              <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
-                <tr className="text-sm uppercase tracking-wider text-gray-700">
-                  <th className="px-6 py-4 text-left">Sale ID</th>
-                  <th className="px-6 py-4 text-right">Revenue</th>
-                  <th className="px-6 py-4 text-right">Profit</th>
-                  <th className="px-6 py-4 text-right">Cash</th>
-                  <th className="px-6 py-4 text-right">Change</th>
-                  <th className="px-6 py-4 text-left">Date</th>
-                  <th className="px-6 py-4 text-center">Action</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-gray-100">
-                {sales.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500">
-                      No sales found.
-                    </td>
+          <div className="overflow-x-auto">
+            <div className="min-w-[900px] max-h-[500px] overflow-y-auto">
+              <table className="w-full">
+                <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
+                  <tr className="text-sm uppercase tracking-wider text-gray-700">
+                    <th className="px-4 py-4 text-left whitespace-nowrap">
+                      Sale ID
+                    </th>
+                    <th className="px-4 py-4 text-right whitespace-nowrap">
+                      Revenue
+                    </th>
+                    <th className="px-4 py-4 text-right whitespace-nowrap">
+                      Profit
+                    </th>
+                    <th className="px-4 py-4 text-right whitespace-nowrap">
+                      Cash
+                    </th>
+                    <th className="px-4 py-4 text-right whitespace-nowrap">
+                      Change
+                    </th>
+                    <th className="px-4 py-4 text-left whitespace-nowrap">
+                      Date
+                    </th>
+                    <th className="px-4 py-4 text-center whitespace-nowrap">
+                      Action
+                    </th>
                   </tr>
-                ) : (
-                  sales.map((sale, index) => (
-                    <tr key={sale.id} className="hover:bg-gray-50 transition">
-                      <td className="px-6 py-4 font-semibold">
-                        #{String(sales.length - index).padStart(4, "0")}
-                      </td>
+                </thead>
 
-                      <td className="px-6 py-4 text-right font-semibold text-green-600">
-                        ₱{Number(sale.total).toLocaleString()}
-                      </td>
-
-                      <td className="px-6 py-4 text-right font-semibold text-emerald-600">
-                        ₱{Number(sale.profit).toLocaleString()}
-                      </td>
-
-                      <td className="px-6 py-4 text-right">
-                        ₱{Number(sale.payment).toLocaleString()}
-                      </td>
-
-                      <td className="px-6 py-4 text-right">
-                        ₱{Number(sale.change).toLocaleString()}
-                      </td>
-
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {new Date(sale.created_at).toLocaleString()}
-                      </td>
-
-                      <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() => {
-                            setDeleteId(sale.id);
-                            setShowDelete(true);
-                          }}
-                          className="rounded-lg border border-gray-300  p-2 text-red-500 hover:bg-red-100"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                <tbody className="divide-y divide-gray-100">
+                  {sales.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="py-8 text-center text-gray-500"
+                      >
+                        No sales found.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    sales.map((sale, index) => (
+                      <tr key={sale.id} className="hover:bg-gray-50 transition">
+                        <td className="px-4 py-4 font-semibold whitespace-nowrap">
+                          #{String(sales.length - index).padStart(4, "0")}
+                        </td>
+
+                        <td className="px-4 py-4 text-right font-semibold text-green-600 whitespace-nowrap">
+                          ₱{Number(sale.total).toLocaleString()}
+                        </td>
+
+                        <td className="px-4 py-4 text-right font-semibold text-emerald-600 whitespace-nowrap">
+                          ₱{Number(sale.profit).toLocaleString()}
+                        </td>
+
+                        <td className="px-4 py-4 text-right whitespace-nowrap">
+                          ₱{Number(sale.payment).toLocaleString()}
+                        </td>
+
+                        <td className="px-4 py-4 text-right whitespace-nowrap">
+                          ₱{Number(sale.change).toLocaleString()}
+                        </td>
+
+                        <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                          {new Date(sale.created_at).toLocaleString()}
+                        </td>
+
+                        <td className="px-4 py-4 text-center">
+                          <button
+                            onClick={() => {
+                              setDeleteId(sale.id);
+                              setShowDelete(true);
+                            }}
+                            className="rounded-lg border border-gray-300 p-2 text-red-500 hover:bg-red-100 transition"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
         {/* ================= CSV ARCHIVE ================= */}
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm flex flex-col">
+        <div className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm flex flex-col">
           <div className="border-b border-gray-200 px-5 py-4">
             <h2 className="text-lg font-semibold">Weekly CSV Reports</h2>
 
@@ -465,7 +484,7 @@ export default function Sales() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top danger bar */}
-              <div className="h-2 bg-red-500" />
+            <div className="h-2 bg-red-500" />
 
             {/* Header */}
             <div className="bg-red-50 px-6 py-4 border-b border-red-100">
@@ -479,7 +498,6 @@ export default function Sales() {
 
             {/* Body */}
             <div className="px-6 py-5 space-y-5">
-
               {/* Choice Buttons */}
               <div className="space-y-3">
                 <button
