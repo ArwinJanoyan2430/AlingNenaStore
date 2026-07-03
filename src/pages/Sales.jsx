@@ -14,6 +14,7 @@ export default function Sales() {
   const [deleting, setDeleting] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [reports, setReports] = useState([]);
+  const [selectedSale, setSelectedSale] = useState(null);
 
   async function fetchReports() {
     const { data, error } = await supabase
@@ -91,9 +92,12 @@ export default function Sales() {
       sale_items!sale_items_sale_id_fkey (
         quantity,
         selling_price,
-        cost_price
+        cost_price,
+        products (
+          name
+        )
       )
-    `,
+      `,
       )
       .order("created_at", { ascending: false });
 
@@ -221,6 +225,35 @@ export default function Sales() {
           <div className="mt-6 h-1 w-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-700 transition-all duration-300 group-hover:w-full" />
         </div>
 
+        {/* Total Profit */}
+        <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+          <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-green-100 opacity-40 blur-2xl group-hover:scale-125 transition-all" />
+
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-wide font-medium text-gray-500">
+                Total Profit
+              </p>
+
+              <h2 className="mt-2 text-3xl font-bold text-green-600">
+                ₱
+                {totalProfit.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </h2>
+
+              <p className="mt-2 text-xs text-gray-400">Lifetime profit</p>
+            </div>
+
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-700 shadow-lg transition-all duration-300 group-hover:rotate-6 group-hover:scale-110">
+              <DollarSign className="text-white" size={30} />
+            </div>
+          </div>
+
+          <div className="mt-6 h-1 w-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-700 transition-all duration-300 group-hover:w-full" />
+        </div>
+
         {/* Transactions */}
         <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
           <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-blue-100 opacity-40 blur-2xl group-hover:scale-125 transition-all" />
@@ -274,35 +307,6 @@ export default function Sales() {
 
           <div className="mt-4 h-1 w-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-700 transition-all duration-300 group-hover:w-full" />
         </div>
-
-        {/* Total Profit */}
-        <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-          <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-green-100 opacity-40 blur-2xl group-hover:scale-125 transition-all" />
-
-          <div className="relative flex items-center justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-wide font-medium text-gray-500">
-                Total Profit
-              </p>
-
-              <h2 className="mt-2 text-3xl font-bold text-gray-900">
-                ₱
-                {totalProfit.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </h2>
-
-              <p className="mt-2 text-xs text-gray-400">Lifetime profit</p>
-            </div>
-
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-700 shadow-lg transition-all duration-300 group-hover:rotate-6 group-hover:scale-110">
-              <DollarSign className="text-white" size={30} />
-            </div>
-          </div>
-
-          <div className="mt-6 h-1 w-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-700 transition-all duration-300 group-hover:w-full" />
-        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -336,6 +340,9 @@ export default function Sales() {
                     </th>
                     <th className="px-4 py-4 text-right whitespace-nowrap">
                       Change
+                    </th>
+                    <th className="px-4 py-4 text-center whitespace-nowrap">
+                      Transaction
                     </th>
                     <th className="px-4 py-4 text-left whitespace-nowrap">
                       Date
@@ -377,6 +384,15 @@ export default function Sales() {
 
                         <td className="px-4 py-4 text-right whitespace-nowrap">
                           ₱{Number(sale.change).toLocaleString()}
+                        </td>
+
+                        <td className="px-4 py-4 text-center">
+                          <button
+                            onClick={() => setSelectedSale(sale)}
+                            className="rounded-md bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-orange-600"
+                          >
+                            View
+                          </button>
                         </td>
 
                         <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
@@ -548,18 +564,140 @@ export default function Sales() {
               </button>
 
               <button
-                onClick={async () => {
+                onClick={() => {
                   if (!deleteMode) return;
 
-                  await confirmDelete(deleteMode === "all");
                   setShowDelete(false);
+                  setShowFinalConfirm(true);
+                }}
+                disabled={!deleteMode}
+                className="flex-1 py-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleteMode ? "Continue" : "Select an option"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showFinalConfirm && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60"
+          onClick={() => setShowFinalConfirm(false)}
+        >
+          <div
+            className="w-[92%] max-w-sm rounded-2xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center  bg-red-600 px-6 py-2 rounded-t-2xl" />
+
+            <div className="border-b px-6 py-5">
+              <h2 className="text-xl font-semibold text-red-600">
+                Final Confirmation
+              </h2>
+
+              <p className="mt-2 text-sm text-gray-600">
+                {deleteMode === "all"
+                  ? "This will permanently delete the transaction and all related profit records. This action cannot be undone."
+                  : "This will permanently delete the transaction. This action cannot be undone."}
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 px-6 py-4">
+              <button
+                onClick={() => {
+                  setShowFinalConfirm(false);
+                  setShowDelete(true);
+                }}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={async () => {
+                  await confirmDelete(deleteMode === "all");
+
+                  setShowFinalConfirm(false);
                   setDeleteId(null);
                   setDeleteMode(null);
                 }}
-                disabled={deleting || !deleteMode}
-                className="flex-1 py-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={deleting}
+                className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
-                {deleting ? "Deleting..." : "Confirm Delete"}
+                {deleting ? "Deleting..." : "Yes, Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedSale && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 "
+          onClick={() => setSelectedSale(null)}
+        >
+          <div
+            className="w-[95%] max-w-md rounded-xl bg-white shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between rounded-t-2xl -mt-1 bg-orange-600 border-b px-5 py-4">
+              <div>
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    Transaction #
+                    {String(
+                      sales.length - sales.indexOf(selectedSale),
+                    ).padStart(4, "0")}
+                  </h2>
+
+                  <p className="text-sm text-white">
+                    {new Date(selectedSale.created_at).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedSale(null)}
+                className="rounded-md px-2 py-1 text-white hover:bg-orange-700 transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Products */}
+            <div className="max-h-80 overflow-y-auto p-5">
+              {selectedSale.sale_items.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">
+                      {item.products?.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Qty: {item.quantity}
+                    </p>
+                  </div>
+
+                  <p className="text-sm font-semibold text-orange-600">
+                    ₱
+                    {(
+                      Number(item.selling_price) * Number(item.quantity)
+                    ).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t px-5 py-4">
+              <button
+                onClick={() => setSelectedSale(null)}
+                className="w-full rounded-lg bg-orange-500 py-2.5 font-medium text-white hover:bg-orange-600 transition"
+              >
+                Close
               </button>
             </div>
           </div>

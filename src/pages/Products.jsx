@@ -113,7 +113,7 @@ export default function Products() {
   }
 
   function handleEdit(product) {
-    setShowModal(false); // FORCE reset first
+    setShowModal(false);
     setSelectedProduct(null);
 
     setTimeout(() => {
@@ -169,7 +169,7 @@ export default function Products() {
                 Inventory Value
               </p>
 
-              <h2 className="mt-2 text-3xl font-bold text-green-500">
+              <h2 className="mt-2 text-3xl font-bold text-green-600">
                 ₱{totalInventoryValue.toLocaleString()}
               </h2>
 
@@ -259,7 +259,7 @@ export default function Products() {
                 ) : (
                   <>
                     {/* STEP 2 */}
-                    <h2 className="mt-5 text-center text-xl font-bold text-red-600">
+                    <h2 className="mt-0 text-center text-xl font-bold text-red-600">
                       Final Confirmation
                     </h2>
 

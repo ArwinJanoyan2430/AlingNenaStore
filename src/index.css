@@ -6,3 +6,19 @@
 .page-subtitle {
     @apply text-slate-500 text-sm;
 }
+
+@keyframes floating {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.glass-card {
+  animation: floating 6s ease-in-out infinite;
+}
