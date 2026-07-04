@@ -1,6 +1,11 @@
 import { Pencil, Trash2, Package } from "lucide-react";
 
-export default function ProductTable({ products, onEdit, onDelete }) {
+export default function ProductTable({
+  products,
+  categories,
+  onEdit,
+  onDelete,
+}) {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
       <div className="max-h-[500px] overflow-y-auto">
@@ -46,7 +51,9 @@ export default function ProductTable({ products, onEdit, onDelete }) {
                     </td>
 
                     <td className="px-6 py-5 text-gray-600">
-                      {product.categories?.name ?? "-"}
+                      {categories.find(
+                        (category) => category.id === product.category_id,
+                      )?.name ?? "-"}
                     </td>
 
                     <td className="px-6 py-5 text-right font-medium">

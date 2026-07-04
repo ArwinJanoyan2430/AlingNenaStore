@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, Plus, Minus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { supabase } from "../services/supabase";
+import { sampleProducts } from "../data/sampleProducts";
+import { sampleSales } from "../data/sampleSales";
+import { sampleSaleItems } from "../data/sampleSaleItems";
 
 export default function Pos() {
   const [search, setSearch] = useState("");
@@ -11,27 +13,30 @@ export default function Pos() {
   const [loading, setLoading] = useState(true);
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastSale, setLastSale] = useState(null);
+  const [todayProfit, setTodayProfit] = useState(0);
+  const [sales, setSales] = useState(sampleSales);
+  const [saleItems, setSaleItems] = useState(sampleSaleItems);
 
   // ---------------- LOAD PRODUCTS ----------------
+  const computeProfit = (items) => {
+    return items.reduce((sum, item) => {
+      const cost = Number(item.cost_price || 0);
+      const sell = Number(item.selling_price || 0);
+      return sum + item.qty * (sell - cost);
+    }, 0);
+  };
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  async function fetchProducts() {
+  function fetchProducts() {
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("name");
+    const sorted = [...sampleProducts].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
 
-    if (error) {
-      console.error(error);
-      toast.error("Failed to load products");
-      setProducts([]);
-    } else {
-      setProducts(data || []);
-    }
+    setProducts(sorted);
 
     setLoading(false);
   }
@@ -136,61 +141,45 @@ export default function Pos() {
 
   async function nextSale() {
     try {
-      // Insert sale and get its ID
-      const { data: sale, error: saleError } = await supabase
-        .from("sales")
-        .insert([
-          {
-            subtotal: lastSale.total,
-            total: lastSale.total,
-            payment: lastSale.cash,
-            change: lastSale.change,
-            created_at: new Date().toISOString(),
-          },
-        ])
-        .select()
-        .single();
+      const saleId = Date.now();
 
-      if (saleError) {
-        toast.error(saleError.message);
-        return;
-      }
+      const newSale = {
+        id: saleId,
+        subtotal: lastSale.total,
+        total: lastSale.total,
+        payment: lastSale.cash,
+        change: lastSale.change,
+        created_at: new Date().toISOString(),
+      };
 
-      // Insert every item into sale_items
-      const saleItems = lastSale.items.map((item) => ({
-        sale_id: sale.id,
+      const newSaleItems = lastSale.items.map((item) => ({
+        sale_id: saleId,
         product_id: item.id,
         quantity: item.qty,
         selling_price: item.selling_price,
-        cost_price: item.cost_price,
-        created_at: new Date().toISOString(),
+        cost_price: item.cost_price || 0,
       }));
 
-      const { error: itemError } = await supabase
-        .from("sale_items")
-        .insert(saleItems);
+      // ✅ FIXED STATE UPDATES
+      setSales((prev) => [...prev, newSale]);
+      setSaleItems((prev) => [...prev, ...newSaleItems]);
 
-      if (itemError) {
-        toast.error(itemError.message);
-        return;
-      }
+      // profit update
+      const profit = computeProfit(lastSale.items);
+      setTodayProfit((prev) => prev + profit);
 
-      // Update stock
-      for (const item of lastSale.items) {
-        const { error } = await supabase
-          .from("products")
-          .update({
-            stock: item.stock - item.qty,
-          })
-          .eq("id", item.id);
+      // stock update
+      setProducts((prev) =>
+        prev.map((p) => {
+          const cartItem = lastSale.items.find((i) => i.id === p.id);
+          if (!cartItem) return p;
 
-        if (error) {
-          toast.error(`Failed to update stock for ${item.name}`);
-          return;
-        }
-      }
-
-      await fetchProducts();
+          return {
+            ...p,
+            stock: p.stock - cartItem.qty,
+          };
+        }),
+      );
 
       setCart([]);
       setCash("");

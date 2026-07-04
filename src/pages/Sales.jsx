@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../services/supabase";
+import { useEffect, useState, useMemo } from "react";
 import { DollarSign, Calendar, Receipt, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { sampleSales } from "../data/sampleSales";
+import { sampleSaleItems } from "../data/sampleSaleItems";
+import { sampleProducts } from "../data/sampleProducts";
+import { sampleReports } from "../data/sampleReports";
 
 export default function Sales() {
-  const [totalProfit, setTotalProfit] = useState(0);
-  const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
   const [showDelete, setShowDelete] = useState(false);
@@ -15,41 +16,28 @@ export default function Sales() {
   const [timeLeft, setTimeLeft] = useState("");
   const [reports, setReports] = useState([]);
   const [selectedSale, setSelectedSale] = useState(null);
+  const [sales, setSales] = useState(sampleSales);
+  const [saleItems, setSaleItems] = useState(sampleSaleItems);
 
-  async function fetchReports() {
-    const { data, error } = await supabase
-      .from("weekly_reports")
-      .select("*")
-      .order("generated_at", { ascending: false });
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setReports(data || []);
+  function fetchReports() {
+    setReports(sampleReports);
   }
 
-  async function fetchTotalProfit() {
-    const { data, error } = await supabase
-      .from("sale_items")
-      .select("quantity, selling_price, cost_price");
+  useEffect(() => {
+  setSales(sampleSales);
+  setSaleItems(sampleSaleItems);
+  setLoading(false);
+}, []);
 
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    const profit = (data ?? []).reduce((sum, item) => {
+  const totalProfit = useMemo(() => {
+    return saleItems.reduce((sum, item) => {
       return (
         sum +
-        ((Number(item.selling_price) || 0) - (Number(item.cost_price) || 0)) *
-          (Number(item.quantity) || 0)
+        (Number(item.selling_price) - Number(item.cost_price)) *
+          Number(item.quantity)
       );
     }, 0);
-
-    setTotalProfit(profit);
-  }
+  }, [saleItems]);
 
   useEffect(() => {
     async function loadData() {
@@ -81,48 +69,29 @@ export default function Sales() {
     return () => clearInterval(interval);
   }, []);
 
-  async function fetchSales() {
+  function fetchSales() {
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("sales")
-      .select(
-        `
-      *,
-      sale_items!sale_items_sale_id_fkey (
-        quantity,
-        selling_price,
-        cost_price,
-        products (
-          name
-        )
-      )
-      `,
-      )
-      .order("created_at", { ascending: false });
+    const salesWithItems = sampleSales.map((sale) => {
+      const sale_items = sampleSaleItems
+        .filter((item) => item.sale_id === sale.id)
+        .map((item) => ({
+          ...item,
+          product: sampleProducts.find((p) => p.id === item.product_id),
+        }));
 
-    if (error) {
-      console.error("Sales fetch error:", error.message);
-      setLoading(false);
-      return;
-    }
-
-    const salesWithProfit = (data || []).map((sale) => {
-      const profit = (sale.sale_items || []).reduce((total, item) => {
-        const sellingPrice = Number(item.selling_price) || 0;
-        const costPrice = Number(item.cost_price) || 0;
-        const quantity = Number(item.quantity) || 0;
-
-        return total + (sellingPrice - costPrice) * quantity;
+      const profit = sale_items.reduce((sum, item) => {
+        return sum + (item.selling_price - item.cost_price) * item.quantity;
       }, 0);
 
       return {
         ...sale,
+        sale_items,
         profit,
       };
     });
 
-    setSales(salesWithProfit);
+    setSales(salesWithItems);
     setLoading(false);
   }
 
@@ -136,45 +105,25 @@ export default function Sales() {
     );
   }
 
-  async function confirmDelete(deleteEverything) {
-    if (!deleteId) return;
+  async function confirmDelete() {
+    if (!deleteId || deleting) return;
 
     setDeleting(true);
 
     try {
-      // Delete sale items (profit) if user chose "Delete Everything"
-      if (deleteEverything) {
-        const { error: itemError } = await supabase
-          .from("sale_items")
-          .delete()
-          .eq("sale_id", deleteId);
+      setSales((prev) => prev.filter((sale) => sale.id !== deleteId));
 
-        if (itemError) throw itemError;
-      }
+      setSaleItems((prev) => prev.filter((item) => item.sale_id !== deleteId));
 
-      // Delete the sale
-      const { error: saleError } = await supabase
-        .from("sales")
-        .delete()
-        .eq("id", deleteId);
-
-      if (saleError) throw saleError;
-
-      // Refresh data
-      await Promise.all([fetchSales(), fetchTotalProfit()]);
-
-      // Reset modal
+      toast.success("Transaction deleted permanently");
+    } catch (err) {
+      toast.error("Delete failed");
+    } finally {
+      setDeleting(false);
       setDeleteId(null);
       setShowDelete(false);
       setShowFinalConfirm(false);
       setDeleteMode(null);
-
-      toast.success("Transaction deleted successfully.");
-    } catch (error) {
-      console.error(error);
-      toast.error(error.message || "Failed to delete transaction.");
-    } finally {
-      setDeleting(false);
     }
   }
 
@@ -420,8 +369,8 @@ export default function Sales() {
         </div>
 
         {/* ================= CSV ARCHIVE ================= */}
-        <div className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm flex flex-col">
-          <div className="border-b border-gray-200 px-5 py-4">
+        <div className="w-full h-[55vh] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm flex flex-col">
+          <div className="border-b border-gray-200 px-4 sm:px-5 py-4">
             <h2 className="text-lg font-semibold">Weekly CSV Reports</h2>
 
             <p className="text-sm text-gray-500">
@@ -436,10 +385,14 @@ export default function Sales() {
               </div>
             ) : (
               reports.map((report) => (
-                <div key={report.id} className="border-b p-5 hover:bg-gray-50">
-                  <div className="flex items-center justify-between">
+                <div
+                  key={report.id}
+                  className="border-b p-4 sm:p-5 hover:bg-gray-50"
+                >
+                  {/* Header */}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h3 className="font-semibold">
+                      <h3 className="font-semibold text-base">
                         Week {report.week_number}
                       </h3>
 
@@ -452,32 +405,36 @@ export default function Sales() {
                       href={report.file_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                      className="w-full sm:w-auto rounded-lg bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-700 transition"
                     >
-                      Download
+                      Download CSV
                     </a>
                   </div>
 
-                  <div className="mt-4 space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span>Revenue</span>
-                      <span className="font-semibold text-green-600">
+                  {/* Stats */}
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                    <div className="rounded-lg bg-green-50 p-3">
+                      <p className="text-gray-500">Revenue</p>
+
+                      <p className="font-bold text-green-600">
                         ₱{Number(report.total_revenue).toLocaleString()}
-                      </span>
+                      </p>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span>Profit</span>
-                      <span className="font-semibold text-emerald-600">
+                    <div className="rounded-lg bg-emerald-50 p-3">
+                      <p className="text-gray-500">Profit</p>
+
+                      <p className="font-bold text-emerald-600">
                         ₱{Number(report.total_profit).toLocaleString()}
-                      </span>
+                      </p>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span>Transactions</span>
-                      <span className="font-semibold">
+                    <div className="rounded-lg bg-gray-100 p-3">
+                      <p className="text-gray-500">Transactions</p>
+
+                      <p className="font-bold text-gray-800">
                         {report.total_transactions}
-                      </span>
+                      </p>
                     </div>
                   </div>
                 </div>

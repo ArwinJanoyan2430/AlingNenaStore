@@ -1,35 +1,36 @@
 import React from "react";
 import { useState } from "react";
-import { supabase } from "../services/supabase";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import "../index.css";
 import logo from "../assets/logo.png";
 import { Eye, EyeOff } from "lucide-react";
 import bg from "../assets/bg.jpg";
+import { sampleUsers } from "../data/sampleUsers";
 
 const Login = () => {
-  const [username, setUsername] = useState("omboy");
+  const [username, setUsername] = useState("user");
   const [password, setPassword] = useState("12345");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  async function handleLogin() {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("username", username)
-      .eq("password", password)
-      .maybeSingle();
-    if (error || !data) {
-      toast.error("Invalid username or password");
-      return;
-    }
+function handleLogin() {
+  const user = sampleUsers.find(
+    (u) =>
+      u.username === username &&
+      u.password === password
+  );
 
-    localStorage.setItem("user", JSON.stringify(data));
-    toast.success("Login Successful!");
-    navigate("/app/dashboard");
+  if (!user) {
+    toast.error("Invalid username or password");
+    return;
   }
+
+  localStorage.setItem("user", JSON.stringify(user));
+
+  toast.success("Login Successful!");
+  navigate("/app/dashboard");
+}
 
   return (
     <div

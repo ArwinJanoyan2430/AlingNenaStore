@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { DollarSign, ShoppingCart, Package, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,7 +12,9 @@ import {
 } from "recharts";
 
 import Card from "../components/Card";
-import { supabase } from "../services/supabase";
+import { sampleProducts } from "../data/sampleProducts";
+import { sampleSales } from "../data/sampleSales";
+import { sampleSaleItems } from "../data/sampleSaleItems";
 
 const Dashboard = () => {
   const [bestSellers, setBestSellers] = useState([]);
@@ -27,320 +29,169 @@ const Dashboard = () => {
   const [recentSales, setRecentSales] = useState([]);
   const [profitChartData, setProfitChartData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saleItems, setSaleItems] = useState(sampleSaleItems);
+  const [sales, setSales] = useState(sampleSales);
+  const [todayProfit, setTodayProfit] = useState(0);
 
-  async function fetchBestSellers() {
+  function getProfit(sale) {
+    // If your backend has profit already:
+    if (sale.profit !== undefined) return Number(sale.profit);
+
+    // fallback assumption (30% margin)
+    return Number(sale.total || 0) * 0.3;
+  }
+  function fetchBestSellers() {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-
-    const { data: sales, error } = await supabase
-      .from("sales")
-      .select(
-        `
-      created_at,
-      sale_items (
-        quantity,
-        product_id,
-        products (
-          id,
-          name,
-          selling_price
-        )
-      )
-    `,
-      )
-      .gte("created_at", today.toISOString())
-      .lt("created_at", tomorrow.toISOString());
-
-    if (error) {
-      console.error(error);
-      return;
-    }
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
 
     const items = {};
 
-    sales.forEach((sale) => {
-      sale.sale_items.forEach((item) => {
-        const id = item.product_id;
+    saleItems.forEach((item) => {
+      if (!item.created_at) return;
 
-        if (!items[id]) {
-          items[id] = {
-            id,
-            name: item.products.name,
-            quantity: 0,
-            revenue: 0,
-          };
-        }
+      const date = new Date(item.created_at);
 
-        items[id].quantity += item.quantity;
-        items[id].revenue += item.quantity * item.products.selling_price;
-      });
-    });
+      // only today
+      if (date < startOfDay) return;
 
-    const ranked = Object.values(items).sort((a, b) => b.quantity - a.quantity);
+      const product = sampleProducts.find((p) => p.id === item.product_id);
+      if (!product) return;
 
-    setBestSellers(ranked);
-  }
-
-  async function fetchProfitChart() {
-    const { data, error } = await supabase
-      .from("sale_items")
-      .select("quantity, selling_price, cost_price, created_at");
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      setProfitChartData([]);
-      return;
-    }
-
-    const today = new Date();
-    let grouped = {};
-
-    if (profitPeriod === "week") {
-      const week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-      week.forEach((day) => (grouped[day] = 0));
-
-      const start = new Date(today);
-      start.setDate(today.getDate() - today.getDay());
-      start.setHours(0, 0, 0, 0);
-
-      data.forEach((item) => {
-        if (!item.created_at) return;
-
-        const date = new Date(item.created_at);
-
-        if (date >= start) {
-          const profit =
-            ((Number(item.selling_price) || 0) -
-              (Number(item.cost_price) || 0)) *
-            (Number(item.quantity) || 0);
-
-          grouped[week[date.getDay()]] += profit;
-        }
-      });
-    }
-
-    if (profitPeriod === "month") {
-      const daysInMonth = new Date(
-        today.getFullYear(),
-        today.getMonth() + 1,
-        0,
-      ).getDate();
-
-      for (let i = 1; i <= daysInMonth; i++) {
-        grouped[i] = 0;
+      if (!items[product.id]) {
+        items[product.id] = {
+          id: product.id,
+          name: product.name,
+          quantity: 0,
+          revenue: 0,
+        };
       }
 
-      data.forEach((item) => {
-        if (!item.created_at) return;
+      const qty = Number(item.quantity || 0);
+      const price = Number(item.selling_price || 0);
 
-        const date = new Date(item.created_at);
+      items[product.id].quantity += qty;
+      items[product.id].revenue += qty * price;
+    });
 
-        if (
-          date.getMonth() === today.getMonth() &&
-          date.getFullYear() === today.getFullYear()
-        ) {
-          const profit =
-            ((Number(item.selling_price) || 0) -
-              (Number(item.cost_price) || 0)) *
-            (Number(item.quantity) || 0);
+    setBestSellers(
+      Object.values(items).sort((a, b) => b.quantity - a.quantity),
+    );
+  }
 
-          grouped[date.getDate()] += profit;
-        }
-      });
-    }
+  function fetchProfitChart() {
+    const grouped = {};
+    const week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    if (profitPeriod === "year") {
-      const months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
+    week.forEach((d) => (grouped[d] = 0));
 
-      months.forEach((month) => (grouped[month] = 0));
+    const start = new Date();
+    start.setDate(start.getDate() - start.getDay());
+    start.setHours(0, 0, 0, 0);
 
-      data.forEach((item) => {
-        if (!item.created_at) return;
+    saleItems.forEach((item) => {
+      const sale = sales.find((s) => Number(s.id) === Number(item.sale_id));
 
-        const date = new Date(item.created_at);
+      // ❗ FIX: ignore deleted/missing sales
+      if (!sale || sale.deleted) return;
 
-        if (date.getFullYear() === today.getFullYear()) {
-          const profit =
-            ((Number(item.selling_price) || 0) -
-              (Number(item.cost_price) || 0)) *
-            (Number(item.quantity) || 0);
+      const date = new Date(sale.created_at);
+      if (date < start) return;
 
-          grouped[months[date.getMonth()]] += profit;
-        }
-      });
-    }
+      const day = week[date.getDay()];
+
+      const profit =
+        (Number(item.selling_price || 0) - Number(item.cost_price || 0)) *
+        Number(item.quantity || 0);
+
+      grouped[day] += profit;
+    });
 
     setProfitChartData(
-      Object.keys(grouped).map((key) => ({
-        name: key,
-        profit: grouped[key],
+      week.map((d) => ({
+        name: d,
+        profit: Number(grouped[d].toFixed(2)),
       })),
     );
   }
 
-  const [todayProfit, setTodayProfit] = useState(0);
+  function fetchTodayProfit() {
+    const today = new Date().toDateString();
 
-  async function fetchTodayProfit() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const total = saleItems.reduce((sum, item) => {
+      const sale = sales.find((s) => Number(s.id) === Number(item.sale_id));
 
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
+      // ❗ FIX: skip deleted/missing sales
+      if (!sale || sale.deleted) return sum;
 
-    const { data, error } = await supabase
-      .from("sale_items")
-      .select("quantity, selling_price, cost_price")
-      .gte("created_at", today.toISOString())
-      .lt("created_at", tomorrow.toISOString());
+      if (new Date(sale.created_at).toDateString() !== today) return sum;
 
-    if (error) {
-      console.error(error);
-      return;
-    }
+      const profit =
+        (Number(item.selling_price || 0) - Number(item.cost_price || 0)) *
+        Number(item.quantity || 0);
 
-    const total = (data ?? []).reduce((sum, item) => {
-      return (
-        sum +
-        ((Number(item.selling_price) || 0) - (Number(item.cost_price) || 0)) *
-          (Number(item.quantity) || 0)
-      );
+      return sum + profit;
     }, 0);
 
     setTodayProfit(total);
   }
 
-  async function fetchDashboardData() {
-    try {
-      setLoading(true);
+  function fetchDashboardData() {
+    setLoading(true);
 
-      await Promise.all([
-        fetchTotalSales(),
-        fetchTransactions(),
-        fetchTodayProfit(),
-        fetchBestSellers(),
-        fetchRevenue(),
-        fetchProfitChart(),
-        fetchRecentSales(),
-        fetchLowStock(),
-      ]);
-    } catch (error) {
-      console.error(error);
-    } finally {
+    setTimeout(() => {
+      fetchTotalSales();
+      fetchTransactions();
+      fetchTodayProfit();
+      fetchBestSellers();
+      fetchRevenue();
+      fetchProfitChart();
+      fetchRecentSales();
+      fetchLowStock();
+
       setLoading(false);
-    }
+    }, 0);
   }
 
-  // =======================
-  // TOTAL SALES
-  // =======================
-  async function fetchTotalSales() {
-    const { data, error } = await supabase.from("sales").select("total");
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    const total =
-      data?.reduce((sum, sale) => sum + Number(sale.total || 0), 0) || 0;
+  function fetchTotalSales() {
+    const total = sampleSales.reduce(
+      (sum, sale) => sum + Number(sale.total),
+      0,
+    );
 
     setTotalSales(total);
   }
 
-  async function fetchTransactions() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  function fetchTransactions() {
+    const today = new Date().toDateString();
 
-    const { count, error } = await supabase
-      .from("sales")
-      .select("*", {
-        count: "exact",
-        head: true,
-      })
-      .gte("created_at", today.toISOString());
+    const count = sampleSales.filter(
+      (sale) => new Date(sale.created_at).toDateString() === today,
+    ).length;
 
-    if (!error) {
-      setTransactions(count || 0);
-    }
+    setTransactions(count);
   }
 
-  async function fetchLowStock() {
-    const { data, error } = await supabase
-      .from("products")
-      .select("id, name, stock, min_stock");
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    const low = (data || []).filter((product) => {
-      const stock = Number(product.stock || 0);
-      const minStock = Number(product.min_stock || 0);
-
-      return stock <= minStock;
-    });
+  function fetchLowStock() {
+    const low = sampleProducts.filter(
+      (product) => product.stock <= product.min_stock,
+    );
 
     setLowStock(low);
   }
 
-  // =======================
-  // RECENT SALES
-  // =======================
-  async function fetchRecentSales() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  function fetchRecentSales() {
+    const today = new Date().toDateString();
 
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
+    const recent = sampleSales
+      .filter((sale) => new Date(sale.created_at).toDateString() === today)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    const { data, error } = await supabase
-      .from("sales")
-      .select("*")
-      .gte("created_at", today.toISOString())
-      .lt("created_at", tomorrow.toISOString())
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setRecentSales(data || []);
+    setRecentSales(recent);
   }
 
-  async function fetchRevenue() {
-    const { data, error } = await supabase
-      .from("sales")
-      .select("total, created_at")
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error(error);
-      return;
-    }
+  function fetchRevenue() {
+    const data = sampleSales;
 
     const today = new Date();
     let grouped = {};
@@ -425,26 +276,6 @@ const Dashboard = () => {
       })),
     );
   }
-  useEffect(() => {
-    const channel = supabase
-      .channel("sales-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "sales",
-        },
-        () => {
-          fetchDashboardData(); // refresh everything
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -468,9 +299,13 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const activeProducts = useMemo(() => {
+    return sampleProducts.filter((p) => !p.deleted);
+  }, []);
+
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [saleItems, sales]);
 
   useEffect(() => {
     fetchRevenue();
@@ -727,7 +562,7 @@ const Dashboard = () => {
                       </p>
 
                       <p className="text-xs text-gray-500">
-                        Profit ₱{Number(sale.profit).toFixed(2)}
+                        Profit ₱{getProfit(sale).toFixed(2)}
                       </p>
                     </div>
                   </div>

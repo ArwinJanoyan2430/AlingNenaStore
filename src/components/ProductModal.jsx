@@ -7,7 +7,7 @@ import {
   Boxes,
   Calculator,
 } from "lucide-react";
-
+import { sampleProducts } from "../data/sampleProducts";
 import toast from "react-hot-toast";
 
 function Field({ label, children }) {

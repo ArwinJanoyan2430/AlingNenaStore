@@ -3,14 +3,10 @@ import Card from "../components/Card";
 import { Boxes, Wallet, AlertTriangle, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import {
-  getProducts,
-  addProduct,
-  updateProduct,
-  deleteProduct,
-} from "../services/productService";
+import { sampleProducts } from "../data/sampleProducts";
+import { sampleCategories } from "../data/sampleCategories";
 
-import { getCategories } from "../services/categoryServices";
+
 import ProductToolbar from "../components/ProductToolbar";
 import ProductTable from "../components/ProductTable";
 import ProductModal from "../components/ProductModal";
@@ -30,8 +26,13 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
-    loadData();
-  }, []);
+  setLoading(true);
+
+  setProducts(sampleProducts);
+  setCategories(sampleCategories);
+
+  setLoading(false);
+}, []);
   const totalInventoryValue = useMemo(() => {
     return products.reduce((total, product) => {
       return (
@@ -51,39 +52,30 @@ export default function Products() {
     .filter(isLowStock)
     .sort((a, b) => Number(a.stock) - Number(b.stock));
 
-  async function loadData() {
-    try {
-      setLoading(true);
+  function handleSave(product) {
+    if (selectedProduct) {
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === selectedProduct.id
+            ? { ...product, id: selectedProduct.id }
+            : p,
+        ),
+      );
 
-      const [productsData, categoriesData] = await Promise.all([
-        getProducts(),
-        getCategories(),
-      ]);
-      setProducts(productsData);
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
+      toast.success("Product updated successfully");
+    } else {
+      const newProduct = {
+        ...product,
+        id: Date.now(),
+      };
+
+      setProducts((prev) => [...prev, newProduct]);
+
+      toast.success("Product added successfully");
     }
-  }
 
-  async function handleSave(product) {
-    try {
-      if (selectedProduct) {
-        await updateProduct(selectedProduct.id, product);
-      } else {
-        await addProduct(product);
-      }
-
-      await loadData();
-
-      setShowModal(false);
-      setSelectedProduct(null);
-    } catch (error) {
-      console.error(error);
-      toast.error(error.message);
-    }
+    setShowModal(false);
+    setSelectedProduct(null);
   }
 
   async function handleDelete() {
@@ -91,8 +83,6 @@ export default function Products() {
 
     try {
       setDeleting(true);
-
-      await deleteProduct(productToDelete);
 
       setProducts((prev) =>
         prev.filter((product) => product.id !== productToDelete),
@@ -314,6 +304,7 @@ export default function Products() {
         <div className="xl:col-span-3">
           <ProductTable
             products={filteredProducts}
+            categories={categories}
             onEdit={handleEdit}
             onDelete={(id) => {
               setProductToDelete(id);
