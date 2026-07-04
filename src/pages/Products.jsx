@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { sampleProducts } from "../data/sampleProducts";
 import { sampleCategories } from "../data/sampleCategories";
 
-
 import ProductToolbar from "../components/ProductToolbar";
 import ProductTable from "../components/ProductTable";
 import ProductModal from "../components/ProductModal";
@@ -26,13 +25,13 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
-  setLoading(true);
+    setLoading(true);
 
-  setProducts(sampleProducts);
-  setCategories(sampleCategories);
+    setProducts(sampleProducts);
+    setCategories(sampleCategories);
 
-  setLoading(false);
-}, []);
+    setLoading(false);
+  }, []);
   const totalInventoryValue = useMemo(() => {
     return products.reduce((total, product) => {
       return (
