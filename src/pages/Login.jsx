@@ -60,9 +60,7 @@ const Login = () => {
               ALING NENA STORE
             </h1>
             <p className="my-4 text-xs sm:text-sm text-white/70 max-w-md text-center leading-relaxed">
-              This is a sample project created for portfolio purposes. The
-              original design and concept are owned and used by its respective
-              owner.
+              This project was originally created as a sample. It has since been sold and is now in active use by its new owner.
             </p>
           </div>
           {/* Inputs */}
