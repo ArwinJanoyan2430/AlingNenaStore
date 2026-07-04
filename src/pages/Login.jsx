@@ -9,28 +9,26 @@ import bg from "../assets/bg.jpg";
 import { sampleUsers } from "../data/sampleUsers";
 
 const Login = () => {
-  const [username, setUsername] = useState("user");
+  const [username, setUsername] = useState("user123");
   const [password, setPassword] = useState("12345");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-function handleLogin() {
-  const user = sampleUsers.find(
-    (u) =>
-      u.username === username &&
-      u.password === password
-  );
+  function handleLogin() {
+    const user = sampleUsers.find(
+      (u) => u.username === username && u.password === password,
+    );
 
-  if (!user) {
-    toast.error("Invalid username or password");
-    return;
+    if (!user) {
+      toast.error("Invalid username or password");
+      return;
+    }
+
+    localStorage.setItem("user", JSON.stringify(user));
+
+    toast.success("Login Successful!");
+    navigate("/app/dashboard");
   }
-
-  localStorage.setItem("user", JSON.stringify(user));
-
-  toast.success("Login Successful!");
-  navigate("/app/dashboard");
-}
 
   return (
     <div
@@ -50,11 +48,7 @@ function handleLogin() {
         <div className="relative flex flex-col gap-6">
           {/* Logo */}
           <div className="flex justify-center">
-            <img
-              src={logo}
-              alt="logo"
-              className="w-70 mx-auto"
-            />
+            <img src={logo} alt="logo" className="w-70 mx-auto" />
           </div>
           {/* Title */}
           <div className="relative text-center mb-3">
@@ -65,6 +59,11 @@ function handleLogin() {
             <h1 className="text-2xl sm:text-3xl md:text-3xl font-extrabold text-white drop-shadow-lg">
               ALING NENA STORE
             </h1>
+            <p className="my-4 text-xs sm:text-sm text-white/70 max-w-md text-center leading-relaxed">
+              This is a sample project created for portfolio purposes. The
+              original design and concept are owned and used by its respective
+              owner.
+            </p>
           </div>
           {/* Inputs */}
           <div className="space-y-2">
