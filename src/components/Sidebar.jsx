@@ -39,7 +39,7 @@ const Sidebar = () => {
               </div>
 
               <div>
-                <h2 className="text-lg font-bold text-white">Omboy Store</h2>
+                <h2 className="text-sm font-bold text-white">Aling Nena Store</h2>
 
                 <p className="text-xs text-gray-400">Point of Sale System</p>
               </div>

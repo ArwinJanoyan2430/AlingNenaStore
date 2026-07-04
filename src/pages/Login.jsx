@@ -63,7 +63,7 @@ function handleLogin() {
             </h2>
 
             <h1 className="text-2xl sm:text-3xl md:text-3xl font-extrabold text-white drop-shadow-lg">
-              OMBOY STORE
+              ALING NENA STORE
             </h1>
           </div>
           {/* Inputs */}
