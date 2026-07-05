@@ -120,11 +120,10 @@ export default function ProductModal({
       // Store cost per PIECE
       cost_price:
         mode === "pack"
-          ? Number(form.cost_per_pack || 0) / packSize
-          : Number(form.cost_per_piece || 0),
+          ? Math.round(Number(form.cost_per_pack || 0) / packSize)
+          : Math.round(Number(form.cost_per_piece || 0)),
 
-      // Store selling price per PIECE
-      selling_price: Number(form.sell_per_piece || 0),
+      selling_price: Math.round(Number(form.sell_per_piece || 0)),
 
       // ✅ Save pack size
       pack_size: packSize,
@@ -243,6 +242,9 @@ export default function ProductModal({
 
               <Field label="Cost per Pack">
                 <input
+                  type="number"
+                  step="1"
+                  min="0"
                   name="cost_per_pack"
                   value={form.cost_per_pack}
                   onChange={handleChange}
@@ -253,6 +255,9 @@ export default function ProductModal({
           ) : (
             <Field label="Cost per Piece">
               <input
+                type="number"
+                step="1"
+                min="0"
                 name="cost_per_piece"
                 value={form.cost_per_piece}
                 onChange={handleChange}
@@ -263,6 +268,9 @@ export default function ProductModal({
 
           <Field label="Selling Price">
             <input
+              type="number"
+              step="1"
+              min="0"
               name="sell_per_piece"
               value={form.sell_per_piece}
               onChange={handleChange}
