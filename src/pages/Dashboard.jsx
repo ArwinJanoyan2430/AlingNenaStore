@@ -41,37 +41,33 @@ const Dashboard = () => {
     return Number(sale.total || 0) * 0.3;
   }
   function fetchBestSellers() {
-    const today = new Date();
-    const startOfDay = new Date(today);
-    startOfDay.setHours(0, 0, 0, 0);
-
     const items = {};
 
-    saleItems.forEach((item) => {
-      if (!item.created_at) return;
+    sampleSaleItems.forEach((item) => {
+      const sale = sampleSales.find(
+        (s) => Number(s.id) === Number(item.sale_id),
+      );
 
-      const date = new Date(item.created_at);
+      if (!sale || sale.deleted) return;
 
-      // only today
-      if (date < startOfDay) return;
+      const name = item.products?.name || "Unknown Product";
 
-      const product = sampleProducts.find((p) => p.id === item.product_id);
-      if (!product) return;
-
-      if (!items[product.id]) {
-        items[product.id] = {
-          id: product.id,
-          name: product.name,
+      if (!items[name]) {
+        items[name] = {
+          name,
           quantity: 0,
           revenue: 0,
+          profit: 0,
         };
       }
 
       const qty = Number(item.quantity || 0);
-      const price = Number(item.selling_price || 0);
+      const selling = Number(item.selling_price || 0);
+      const cost = Number(item.cost_price || 0);
 
-      items[product.id].quantity += qty;
-      items[product.id].revenue += qty * price;
+      items[name].quantity += qty;
+      items[name].revenue += qty * selling;
+      items[name].profit += qty * (selling - cost);
     });
 
     setBestSellers(
@@ -81,38 +77,119 @@ const Dashboard = () => {
 
   function fetchProfitChart() {
     const grouped = {};
-    const week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const today = new Date();
 
-    week.forEach((d) => (grouped[d] = 0));
+    if (profitPeriod === "week") {
+      const week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    const start = new Date();
-    start.setDate(start.getDate() - start.getDay());
-    start.setHours(0, 0, 0, 0);
+      week.forEach((d) => (grouped[d] = 0));
 
-    saleItems.forEach((item) => {
-      const sale = sales.find((s) => Number(s.id) === Number(item.sale_id));
+      const start = new Date(today);
+      start.setDate(today.getDate() - today.getDay());
+      start.setHours(0, 0, 0, 0);
 
-      // ❗ FIX: ignore deleted/missing sales
-      if (!sale || sale.deleted) return;
+      saleItems.forEach((item) => {
+        const sale = sales.find((s) => s.id === item.sale_id);
 
-      const date = new Date(sale.created_at);
-      if (date < start) return;
+        if (!sale || sale.deleted) return;
 
-      const day = week[date.getDay()];
+        const date = new Date(sale.created_at);
 
-      const profit =
-        (Number(item.selling_price || 0) - Number(item.cost_price || 0)) *
-        Number(item.quantity || 0);
+        if (date < start) return;
 
-      grouped[day] += profit;
-    });
+        const profit =
+          (Number(item.selling_price) - Number(item.cost_price)) *
+          Number(item.quantity);
 
-    setProfitChartData(
-      week.map((d) => ({
-        name: d,
-        profit: Number(grouped[d].toFixed(2)),
-      })),
-    );
+        grouped[week[date.getDay()]] += profit;
+      });
+
+      setProfitChartData(
+        week.map((day) => ({
+          name: day,
+          profit: grouped[day],
+        })),
+      );
+    }
+
+    if (profitPeriod === "month") {
+      const days = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+      ).getDate();
+
+      for (let i = 1; i <= days; i++) grouped[i] = 0;
+
+      saleItems.forEach((item) => {
+        const sale = sales.find((s) => s.id === item.sale_id);
+
+        if (!sale || sale.deleted) return;
+
+        const date = new Date(sale.created_at);
+
+        if (
+          date.getMonth() !== today.getMonth() ||
+          date.getFullYear() !== today.getFullYear()
+        )
+          return;
+
+        const profit =
+          (Number(item.selling_price) - Number(item.cost_price)) *
+          Number(item.quantity);
+
+        grouped[date.getDate()] += profit;
+      });
+
+      setProfitChartData(
+        Object.keys(grouped).map((day) => ({
+          name: day,
+          profit: grouped[day],
+        })),
+      );
+    }
+
+    if (profitPeriod === "year") {
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+
+      months.forEach((m) => (grouped[m] = 0));
+
+      saleItems.forEach((item) => {
+        const sale = sales.find((s) => s.id === item.sale_id);
+
+        if (!sale || sale.deleted) return;
+
+        const date = new Date(sale.created_at);
+
+        if (date.getFullYear() !== today.getFullYear()) return;
+
+        const profit =
+          (Number(item.selling_price) - Number(item.cost_price)) *
+          Number(item.quantity);
+
+        grouped[months[date.getMonth()]] += profit;
+      });
+
+      setProfitChartData(
+        months.map((month) => ({
+          name: month,
+          profit: grouped[month],
+        })),
+      );
+    }
   }
 
   function fetchTodayProfit() {
@@ -140,7 +217,7 @@ const Dashboard = () => {
     setLoading(true);
 
     setTimeout(() => {
-      fetchTotalSales();
+      fetchTodayRevenue();
       fetchTransactions();
       fetchTodayProfit();
       fetchBestSellers();
@@ -153,11 +230,14 @@ const Dashboard = () => {
     }, 0);
   }
 
-  function fetchTotalSales() {
-    const total = sampleSales.reduce(
-      (sum, sale) => sum + Number(sale.total),
-      0,
-    );
+  function fetchTodayRevenue() {
+    const today = new Date().toDateString();
+
+    const total = sampleSales.reduce((sum, sale) => {
+      if (new Date(sale.created_at).toDateString() !== today) return sum;
+
+      return sum + Number(sale.total || 0);
+    }, 0);
 
     setTotalSales(total);
   }
@@ -181,13 +261,36 @@ const Dashboard = () => {
   }
 
   function fetchRecentSales() {
-    const today = new Date().toDateString();
-
     const recent = sampleSales
-      .filter((sale) => new Date(sale.created_at).toDateString() === today)
+      .filter((sale) => !sale.deleted)
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    setRecentSales(recent);
+    const data = recent.map((sale) => {
+      const items = sampleSaleItems.filter(
+        (item) => Number(item.sale_id) === Number(sale.id),
+      );
+
+      const itemCount = items.reduce(
+        (sum, item) => sum + Number(item.quantity || 0),
+        0,
+      );
+
+      const profit = items.reduce(
+        (sum, item) =>
+          sum +
+          (Number(item.selling_price || 0) - Number(item.cost_price || 0)) *
+            Number(item.quantity || 0),
+        0,
+      );
+
+      return {
+        ...sale,
+        itemCount,
+        profit,
+      };
+    });
+
+    setRecentSales(data);
   }
 
   function fetchRevenue() {
@@ -204,6 +307,10 @@ const Dashboard = () => {
 
       const start = new Date(today);
       start.setDate(today.getDate() - today.getDay());
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(start);
+      end.setDate(start.getDate() + 7);
 
       data.forEach((sale) => {
         const date = new Date(sale.created_at);
@@ -335,12 +442,12 @@ const Dashboard = () => {
       {/* SUMMARY CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card
-          title="Total Revenue"
+          title="Today's Revenue"
           value={`₱ ${totalSales.toLocaleString()}`}
           icon={DollarSign}
           color="blue"
           action={{
-            label: "View Sales Report",
+            label: "View Total Revenue",
             onClick: () => navigate("/app/sales"),
           }}
         />
@@ -354,7 +461,8 @@ const Dashboard = () => {
           icon={DollarSign}
           color="green"
           action={{
-            label: "Based on today's sales",
+            label: "View Total Profit",
+            onClick: () => navigate("/app/sales"),
           }}
         />
 
@@ -557,12 +665,12 @@ const Dashboard = () => {
                     </div>
 
                     <div className="text-right">
-                      <p className="font-bold text-green-600">
-                        ₱{Number(sale.total).toFixed(2)}
+                      <p className="text-xs text-gray-500">
+                        {sale.itemCount} Items
                       </p>
 
-                      <p className="text-xs text-gray-500">
-                        Profit ₱{getProfit(sale).toFixed(2)}
+                      <p className="text-xs text-green-600 font-medium">
+                        Profit ₱{sale.profit.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -631,13 +739,23 @@ const Dashboard = () => {
                     <div className="text-right">
                       <p className="font-bold text-green-600">
                         ₱
-                        {Number(product.revenue).toLocaleString(undefined, {
+                        {product.revenue.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
                       </p>
 
-                      <p className="text-xs text-gray-500">Revenue</p>
+                      <p className="text-xs text-gray-500">
+                        {product.quantity} sold
+                      </p>
+
+                      <p className="text-xs font-medium text-emerald-600">
+                        Profit ₱
+                        {product.profit.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
                     </div>
                   </div>
                 );

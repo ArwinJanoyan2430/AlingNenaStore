@@ -1,8 +1,13 @@
+const formatDate = (daysAgo) => {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  return date.toISOString().split("T")[0];
+};
 export const sampleReports = [
   {
     id: 1,
     week_number: 22,
-    generated_at: "2026-05-25",
+    generated_at: formatDate(19),
     file_url: "#",
     total_revenue: 8450,
     total_profit: 2120,
@@ -11,7 +16,7 @@ export const sampleReports = [
   {
     id: 2,
     week_number: 23,
-    generated_at: "2026-06-01",
+    generated_at: formatDate(18),
     file_url: "#",
     total_revenue: 9135,
     total_profit: 2350,
@@ -20,7 +25,7 @@ export const sampleReports = [
   {
     id: 3,
     week_number: 24,
-    generated_at: "2026-06-08",
+    generated_at: formatDate(17),
     file_url: "#",
     total_revenue: 10280,
     total_profit: 2685,
@@ -29,7 +34,7 @@ export const sampleReports = [
   {
     id: 4,
     week_number: 25,
-    generated_at: "2026-06-15",
+    generated_at: formatDate(16),
     file_url: "#",
     total_revenue: 11075,
     total_profit: 2940,
@@ -38,7 +43,7 @@ export const sampleReports = [
   {
     id: 5,
     week_number: 26,
-    generated_at: "2026-06-22",
+    generated_at: formatDate(15),
     file_url: "#",
     total_revenue: 11890,
     total_profit: 3180,
@@ -47,7 +52,7 @@ export const sampleReports = [
   {
     id: 6,
     week_number: 27,
-    generated_at: "2026-06-29",
+    generated_at: formatDate(14),
     file_url: "#",
     total_revenue: 12450,
     total_profit: 3395,
@@ -56,7 +61,7 @@ export const sampleReports = [
   {
     id: 7,
     week_number: 28,
-    generated_at: "2026-07-06",
+    generated_at: formatDate(13),
     file_url: "#",
     total_revenue: 13210,
     total_profit: 3610,
@@ -65,7 +70,7 @@ export const sampleReports = [
   {
     id: 8,
     week_number: 29,
-    generated_at: "2026-07-13",
+    generated_at: formatDate(12),
     file_url: "#",
     total_revenue: 14025,
     total_profit: 3895,
@@ -74,7 +79,7 @@ export const sampleReports = [
   {
     id: 9,
     week_number: 30,
-    generated_at: "2026-07-20",
+    generated_at: formatDate(11),
     file_url: "#",
     total_revenue: 14760,
     total_profit: 4115,
@@ -83,10 +88,100 @@ export const sampleReports = [
   {
     id: 10,
     week_number: 31,
-    generated_at: "2026-07-27",
+    generated_at: formatDate(10),
     file_url: "#",
     total_revenue: 15640,
     total_profit: 4380,
     total_transactions: 149,
+  },
+  {
+    id: 11,
+    week_number: 32,
+    generated_at: formatDate(9),
+    file_url: "#",
+    total_revenue: 16485,
+    total_profit: 4610,
+    total_transactions: 156,
+  },
+  {
+    id: 12,
+    week_number: 33,
+    generated_at: formatDate(8),
+    file_url: "#",
+    total_revenue: 17230,
+    total_profit: 4875,
+    total_transactions: 163,
+  },
+  {
+    id: 13,
+    week_number: 34,
+    generated_at: formatDate(7),
+    file_url: "#",
+    total_revenue: 18150,
+    total_profit: 5130,
+    total_transactions: 171,
+  },
+  {
+    id: 14,
+    week_number: 35,
+    generated_at: formatDate(6),
+    file_url: "#",
+    total_revenue: 18920,
+    total_profit: 5385,
+    total_transactions: 178,
+  },
+  {
+    id: 15,
+    week_number: 36,
+    generated_at: formatDate(5),
+    file_url: "#",
+    total_revenue: 19875,
+    total_profit: 5675,
+    total_transactions: 186,
+  },
+  {
+    id: 16,
+    week_number: 37,
+    generated_at: formatDate(4),
+    file_url: "#",
+    total_revenue: 20610,
+    total_profit: 5925,
+    total_transactions: 194,
+  },
+  {
+    id: 17,
+    week_number: 38,
+    generated_at: formatDate(3),
+    file_url: "#",
+    total_revenue: 21480,
+    total_profit: 6190,
+    total_transactions: 201,
+  },
+  {
+    id: 18,
+    week_number: 39,
+    generated_at: formatDate(2),
+    file_url: "#",
+    total_revenue: 22350,
+    total_profit: 6445,
+    total_transactions: 208,
+  },
+  {
+    id: 19,
+    week_number: 40,
+    generated_at: formatDate(1), // Yesterday
+    file_url: "#",
+    total_revenue: 23190,
+    total_profit: 6690,
+    total_transactions: 216,
+  },
+  {
+    id: 20,
+    week_number: 41,
+    generated_at: formatDate(0), // Today
+    file_url: "#",
+    total_revenue: 24050,
+    total_profit: 6955,
+    total_transactions: 224,
   },
 ];
