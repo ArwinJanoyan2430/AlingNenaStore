@@ -2,7 +2,7 @@ export const sampleUsers = [
   {
     id: 1,
     username: "user123",
-    password: "12345",
+    password: "pass123",
     fullname: "Store Owner",
   },
 ];
