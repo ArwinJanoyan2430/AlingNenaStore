@@ -10,7 +10,7 @@ import { sampleUsers } from "../data/sampleUsers";
 
 const Login = () => {
   const [username, setUsername] = useState("user123");
-  const [password, setPassword] = useState("12345");
+  const [password, setPassword] = useState("pass123");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -57,10 +57,13 @@ const Login = () => {
             </h2>
 
             <h1 className="text-2xl sm:text-3xl md:text-3xl font-extrabold text-white drop-shadow-lg">
-              ALING NENA STORE
+              OMBOY STORE
             </h1>
+
             <p className="my-4 text-xs sm:text-sm text-white/70 max-w-md text-center leading-relaxed">
-              This project was originally created as a sample. It has since been sold and is now in active use by its new owner.
+              A POS and inventory management system originally developed as a
+              sample project and later deployed for real store operations by the
+              owner.
             </p>
           </div>
           {/* Inputs */}
