@@ -61,9 +61,7 @@ const Login = () => {
             </h1>
 
             <p className="my-4 text-xs sm:text-sm text-white/70 max-w-md text-center leading-relaxed">
-              A POS and inventory management system originally developed as a
-              sample project and later deployed for real store operations by the
-              owner.
+              A POS and inventory management system built as a showcase project. The system was later purchased by a client for deployment in a real business.
             </p>
           </div>
           {/* Inputs */}
